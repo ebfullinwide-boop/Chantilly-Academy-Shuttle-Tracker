@@ -1,330 +1,339 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bus Arrival Tracker</title>
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --dark: #0f172a;
-      --light: #f1f5f9;
-      --green: #15803d;
-      --green-light: #dcfce7;
+import React, { useEffect, useMemo, useState } from "react";
+
+const BLOCKS = [
+  {
+    id: "am",
+    label: "AM",
+    subtitle: "Periods 1 & 2",
+    buses: [
+      { school: "Centreville", bus: "3102", departs: "9:45 AM", eta: "9:57 AM", days: "All" },
+      { school: "Fairfax", bus: "3100", departs: "9:45 AM", eta: "10:12 AM", days: "All" },
+      { school: "Herndon", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
+      { school: "Herndon", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
+      { school: "Robinson", bus: "3109", departs: "9:45 AM", eta: "10:10 AM", days: "All" },
+      { school: "South Lakes", bus: "4105", departs: "9:45 AM", eta: "10:07 AM", days: "All" },
+      { school: "Westfield", bus: "3113", departs: "9:45 AM", eta: "9:58 AM", days: "All" },
+      { school: "Woodson", bus: "2101", departs: "9:45 AM", eta: "10:12 AM", days: "All" },
+    ],
+  },
+  {
+    id: "mid1",
+    label: "Mid Day 1",
+    subtitle: "Periods 3 & 4",
+    buses: [
+      { school: "Centreville", bus: "3205", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
+      { school: "Fairfax", bus: "3207", departs: "11:15 AM", eta: "11:38 AM", days: "All" },
+      { school: "Falls Church", bus: "2233", departs: "11:15 AM", eta: "11:51 AM", days: "A-Day" },
+      { school: "Herndon", bus: "4200", departs: "11:15 AM", eta: "11:38 AM", days: "All" },
+      { school: "Madison", bus: "4203", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
+      { school: "Marshall/ McLean", bus: "4211", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
+      { school: "Oakton", bus: "3204", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
+      { school: "Robinson", bus: "3215", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
+      { school: "South Lakes", bus: "4214", departs: "11:15 AM", eta: "11:37 AM", days: "All" },
+      { school: "Westfield", bus: "3219", departs: "11:15 AM", eta: "11:28 AM", days: "All" },
+      { school: "Woodson", bus: "2225", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
+    ],
+  },
+  {
+    id: "mid2",
+    label: "Mid Day 2",
+    subtitle: "Periods 5 & 6",
+    buses: [
+      { school: "Centreville", bus: "3206", departs: "1:10 PM", eta: "1:22 PM", days: "All" },
+      { school: "Fairfax", bus: "3208", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
+      { school: "Herndon", bus: "4202", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
+      { school: "Madison", bus: "4204", departs: "1:10 PM", eta: "1:36 PM", days: "All" },
+      { school: "McLean", bus: "4212", departs: "1:10 PM", eta: "1:50 PM", days: "A-Day" },
+      { school: "Robinson", bus: "3216", departs: "1:10 PM", eta: "1:35 PM", days: "All" },
+      { school: "South Lakes", bus: "4215", departs: "1:10 PM", eta: "1:32 PM", days: "All" },
+      { school: "Westfield", bus: "3221", departs: "1:10 PM", eta: "1:23 PM", days: "All" },
+      { school: "Woodson", bus: "2250", departs: "1:10 PM", eta: "1:37 PM", days: "All" },
+    ],
+  },
+];
+
+const STORAGE_KEY = "chantilly-bus-arrivals-v2";
+
+function makeKey(blockId, bus) {
+  return `${blockId}-${bus.school}-${bus.bus}`;
+}
+
+function isArrived(value) {
+  return Boolean(value === true || value?.arrived);
+}
+
+function getArrivalOrder(value) {
+  return typeof value === "object" && value ? value.order : null;
+}
+
+function getArrivalTime(value) {
+  return typeof value === "object" && value ? value.time : null;
+}
+
+function formatTime(date = new Date()) {
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+export default function BusArrivalTracker() {
+  const [activeBlock, setActiveBlock] = useState("am");
+  const [arrived, setArrived] = useState({});
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setArrived(JSON.parse(saved));
+    } catch (error) {
+      console.warn("Could not load saved arrival data", error);
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
-    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
-    header { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--card); border-radius: 24px; padding: 24px; box-shadow: 0 1px 5px rgba(15, 23, 42, 0.08); margin-bottom: 16px; }
-    .badge { display: inline-flex; align-items: center; gap: 8px; background: var(--light); border-radius: 999px; padding: 7px 12px; font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 12px; }
-    h1 { margin: 0; font-size: 30px; line-height: 1.1; }
-    .subtitle { margin: 10px 0 0; color: var(--muted); font-size: 16px; }
-    button { font: inherit; cursor: pointer; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
-    .small-button { border: 1px solid var(--border); border-radius: 16px; background: #fff; color: var(--text); padding: 10px 14px; font-weight: 700; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
-    .small-button.secondary { background: var(--light); }
-    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-    .tab { border: 2px solid transparent; background: rgba(255,255,255,.75); border-radius: 22px; padding: 16px; text-align: left; box-shadow: 0 1px 5px rgba(15, 23, 42, 0.06); }
-    .tab.active { border-color: var(--dark); background: white; }
-    .tab-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-    .tab-title { font-size: 18px; font-weight: 800; }
-    .tab-count { color: var(--muted); font-size: 14px; margin-top: 4px; }
-    .percent { font-size: 24px; font-weight: 900; }
-    .bar { height: 8px; background: var(--light); border-radius: 999px; overflow: hidden; margin-top: 14px; }
-    .bar-fill { height: 100%; background: var(--dark); border-radius: 999px; }
-    .panel { background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 1px 5px rgba(15, 23, 42, 0.08); }
-    .panel-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-    h2 { margin: 0; font-size: 26px; }
-    .panel-meta { color: var(--muted); margin-top: 6px; }
-    .search-wrap { position: relative; width: min(100%, 340px); }
-    .search-icon { position: absolute; left: 12px; top: 11px; color: #94a3b8; }
-    input[type="search"] { width: 100%; border: 1px solid var(--border); border-radius: 16px; padding: 11px 12px 11px 40px; font-size: 16px; outline: none; }
-    input[type="search"]:focus { box-shadow: 0 0 0 3px #cbd5e1; }
-    .arrival-order { margin-top: 20px; border: 1px solid var(--border); background: #f8fafc; border-radius: 24px; padding: 16px; }
-    .arrival-order-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-    h3 { margin: 0; font-size: 19px; }
-    .recorded { color: var(--muted); font-size: 14px; }
-    .empty { border: 1px dashed #cbd5e1; border-radius: 16px; background: white; color: var(--muted); text-align: center; padding: 16px; font-size: 14px; }
-    .order-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0; margin: 0; list-style: none; }
-    .order-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--green); color: white; border-radius: 16px; padding: 12px; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08); }
-    .order-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .order-number { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; background: white; color: var(--green); font-weight: 900; flex: 0 0 auto; }
-    .order-school { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .order-bus, .order-time { color: var(--green-light); font-size: 14px; }
-    .bus-list { display: grid; gap: 12px; margin-top: 20px; }
-    .bus-row { width: 100%; border: 1px solid var(--border); border-radius: 22px; background: white; color: var(--text); padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left; transition: border-color .15s, background .15s; }
-    .bus-row:hover { border-color: #94a3b8; }
-    .bus-row.arrived { border-color: var(--dark); background: var(--dark); color: white; }
-    .bus-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .check { width: 42px; height: 42px; border-radius: 999px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 18px; font-weight: 900; flex: 0 0 auto; }
-    .arrived .check { background: white; color: var(--dark); border-color: white; }
-    .school { font-size: 18px; font-weight: 800; }
-    .details { color: var(--muted); font-size: 14px; margin-top: 3px; }
-    .arrived .details { color: #e2e8f0; }
-    .arrived-line { margin-top: 5px; font-size: 12px; color: #cbd5e1; }
-    .bus-time { text-align: right; font-size: 14px; font-weight: 700; white-space: nowrap; }
-    .time-small { margin-top: 5px; font-size: 12px; color: var(--muted); font-weight: 400; }
-    .arrived .time-small { color: #cbd5e1; }
-    @media (max-width: 760px) {
-      .container { padding: 12px; }
-      header { padding: 18px; }
-      h1 { font-size: 26px; }
-      .tabs { grid-template-columns: 1fr; }
-      .order-list { grid-template-columns: 1fr; }
-      .bus-row { align-items: flex-start; }
-      .bus-time { font-size: 13px; }
-      .school { font-size: 17px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <div>
-        <div class="badge"><span>🚌</span> Chantilly Academy Shuttle Tracker</div>
-        <h1>Bus Arrival Dashboard</h1>
-        <p class="subtitle">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
-      </div>
-      <div class="actions">
-        <button class="small-button" id="resetBlockButton">↻ Reset block</button>
-        <button class="small-button secondary" id="resetAllButton">Reset all</button>
-      </div>
-    </header>
+  }, []);
 
-    <section class="tabs" id="tabs"></section>
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived));
+  }, [arrived]);
 
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2 id="blockTitle">AM Arrivals</h2>
-          <div class="panel-meta" id="blockMeta"></div>
-        </div>
-        <label class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input id="searchInput" type="search" placeholder="Search school, bus, or time" />
-        </label>
-      </div>
+  const block = BLOCKS.find((item) => item.id === activeBlock) ?? BLOCKS[0];
 
-      <div class="arrival-order">
-        <div class="arrival-order-head">
-          <h3>Arrival Order</h3>
-          <div class="recorded" id="recordedCount">0 recorded</div>
-        </div>
-        <div id="arrivalSequence"></div>
-      </div>
+  const filteredBuses = block.buses.filter((bus) => {
+    const arrivalValue = arrived[makeKey(block.id, bus)];
+    if (isArrived(arrivalValue)) return false;
 
-      <div class="bus-list" id="busList"></div>
-    </section>
-  </div>
+    const text = `${bus.school} ${bus.bus} ${bus.eta} ${bus.days}`.toLowerCase();
+    return text.includes(query.toLowerCase());
+  });
 
-  <script>
-    const BLOCKS = [
-      { id: "am", label: "AM", subtitle: "Periods 1 & 2", buses: [
-        { school: "Centreville", bus: "3102", departs: "9:45 AM", eta: "9:57 AM", days: "All" },
-        { school: "Fairfax", bus: "3100", departs: "9:45 AM", eta: "10:12 AM", days: "All" },
-        { school: "Herndon", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
-        { school: "Herndon", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
-        { school: "Robinson", bus: "3109", departs: "9:45 AM", eta: "10:10 AM", days: "All" },
-        { school: "South Lakes", bus: "4105", departs: "9:45 AM", eta: "10:07 AM", days: "All" },
-        { school: "Westfield", bus: "3113", departs: "9:45 AM", eta: "9:58 AM", days: "All" },
-        { school: "Woodson", bus: "2101", departs: "9:45 AM", eta: "10:12 AM", days: "All" }
-      ]},
-      { id: "mid1", label: "Mid Day 1", subtitle: "Periods 3 & 4", buses: [
-        { school: "Centreville", bus: "3205", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
-        { school: "Fairfax", bus: "3207", departs: "11:15 AM", eta: "11:38 AM", days: "All" },
-        { school: "Falls Church", bus: "2233", departs: "11:15 AM", eta: "11:51 AM", days: "A-Day" },
-        { school: "Herndon", bus: "4200", departs: "11:15 AM", eta: "11:38 AM", days: "All" },
-        { school: "Madison", bus: "4203", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
-        { school: "Marshall/ McLean", bus: "4211", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
-        { school: "Oakton", bus: "3204", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
-        { school: "Robinson", bus: "3215", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
-        { school: "South Lakes", bus: "4214", departs: "11:15 AM", eta: "11:37 AM", days: "All" },
-        { school: "Westfield", bus: "3219", departs: "11:15 AM", eta: "11:28 AM", days: "All" },
-        { school: "Woodson", bus: "2225", departs: "11:15 AM", eta: "11:40 AM", days: "All" }
-      ]},
-      { id: "mid2", label: "Mid Day 2", subtitle: "Periods 5 & 6", buses: [
-        { school: "Centreville", bus: "3206", departs: "1:10 PM", eta: "1:22 PM", days: "All" },
-        { school: "Fairfax", bus: "3208", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
-        { school: "Herndon", bus: "4202", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
-        { school: "Madison", bus: "4204", departs: "1:10 PM", eta: "1:36 PM", days: "All" },
-        { school: "McLean", bus: "4212", departs: "1:10 PM", eta: "1:50 PM", days: "A-Day" },
-        { school: "Robinson", bus: "3216", departs: "1:10 PM", eta: "1:35 PM", days: "All" },
-        { school: "South Lakes", bus: "4215", departs: "1:10 PM", eta: "1:32 PM", days: "All" },
-        { school: "Westfield", bus: "3221", departs: "1:10 PM", eta: "1:23 PM", days: "All" },
-        { school: "Woodson", bus: "2250", departs: "1:10 PM", eta: "1:37 PM", days: "All" }
-      ]}
-    ];
+  const stats = useMemo(() => {
+    return BLOCKS.map((item) => {
+      const total = item.buses.length;
+      const count = item.buses.filter((bus) => isArrived(arrived[makeKey(item.id, bus)])).length;
+      return { id: item.id, label: item.label, total, count };
+    });
+  }, [arrived]);
 
-    const STORAGE_KEY = "chantilly-bus-arrivals-v2";
-    let activeBlockId = "am";
-    let arrived = loadArrivals();
+  const activeStats = stats.find((item) => item.id === activeBlock);
+  const progress = activeStats ? Math.round((activeStats.count / activeStats.total) * 100) : 0;
 
-    function makeKey(blockId, bus) { return `${blockId}-${bus.school}-${bus.bus}`; }
-    function isArrived(value) { return Boolean(value === true || (value && value.arrived)); }
-    function getArrivalOrder(value) { return typeof value === "object" && value ? value.order : null; }
-    function getArrivalTime(value) { return typeof value === "object" && value ? value.time : null; }
-    function formatTime(date = new Date()) { return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+  const arrivalSequence = block.buses
+    .map((bus) => {
+      const value = arrived[makeKey(block.id, bus)];
+      return {
+        ...bus,
+        key: makeKey(block.id, bus),
+        order: getArrivalOrder(value),
+        time: getArrivalTime(value),
+      };
+    })
+    .filter((bus) => bus.order !== null)
+    .sort((a, b) => a.order - b.order);
 
-    function loadArrivals() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-      catch (error) { return {}; }
-    }
-    function saveArrivals() { localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived)); }
-    function getActiveBlock() { return BLOCKS.find(item => item.id === activeBlockId) || BLOCKS[0]; }
-    function getStats(block) {
-      const total = block.buses.length;
-      const count = block.buses.filter(bus => isArrived(arrived[makeKey(block.id, bus)])).length;
-      const percent = total ? Math.round((count / total) * 100) : 0;
-      return { total, count, percent };
-    }
-    function getArrivalSequence(block) {
-      return block.buses.map(bus => {
-        const value = arrived[makeKey(block.id, bus)];
-        return { ...bus, key: makeKey(block.id, bus), order: getArrivalOrder(value), time: getArrivalTime(value) };
-      }).filter(bus => bus.order !== null).sort((a, b) => a.order - b.order);
-    }
-    function getNextOrder(block) {
-      const orders = block.buses.map(bus => getArrivalOrder(arrived[makeKey(block.id, bus)])).filter(order => typeof order === "number");
-      return orders.length ? Math.max(...orders) + 1 : 1;
-    }
-    function resequenceBlock(block) {
-      const ordered = block.buses
-        .map(bus => ({ bus, value: arrived[makeKey(block.id, bus)] }))
-        .filter(item => isArrived(item.value))
-        .sort((a, b) => (getArrivalOrder(a.value) || 999) - (getArrivalOrder(b.value) || 999));
-      ordered.forEach((item, index) => {
-        const key = makeKey(block.id, item.bus);
-        arrived[key] = { arrived: true, order: index + 1, time: getArrivalTime(item.value) || "Recorded" };
-      });
-    }
-    function toggleArrival(bus) {
-      const block = getActiveBlock();
-      const key = makeKey(block.id, bus);
-      if (isArrived(arrived[key])) {
-        delete arrived[key];
-        resequenceBlock(block);
-      } else {
-        arrived[key] = { arrived: true, order: getNextOrder(block), time: formatTime() };
+  function getNextOrder(currentArrived) {
+    const orders = block.buses
+      .map((bus) => getArrivalOrder(currentArrived[makeKey(block.id, bus)]))
+      .filter((order) => typeof order === "number");
+
+    return orders.length ? Math.max(...orders) + 1 : 1;
+  }
+
+  function toggleArrival(bus) {
+    const key = makeKey(block.id, bus);
+
+    setArrived((current) => {
+      const next = { ...current };
+
+      if (isArrived(next[key])) {
+        delete next[key];
+        return resequenceBlock(next);
       }
-      saveArrivals();
-      render();
-    }
-    function resetBlock() {
-      const block = getActiveBlock();
-      if (!confirm(`Reset ${block.label} arrivals?`)) return;
-      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
-      saveArrivals();
-      render();
-    }
-    function resetAll() {
-      if (!confirm("Reset all arrivals?")) return;
-      arrived = {};
-      saveArrivals();
-      render();
-    }
 
-    function renderTabs() {
-      const tabs = document.getElementById("tabs");
-      tabs.innerHTML = "";
-      BLOCKS.forEach(block => {
-        const stats = getStats(block);
-        const tab = document.createElement("button");
-        tab.className = "tab" + (block.id === activeBlockId ? " active" : "");
-        tab.innerHTML = `
-          <div class="tab-top">
-            <div>
-              <div class="tab-title">${block.label}</div>
-              <div class="tab-count">${stats.count} of ${stats.total} arrived</div>
+      next[key] = {
+        arrived: true,
+        order: getNextOrder(next),
+        time: formatTime(),
+      };
+
+      return next;
+    });
+  }
+
+  function resequenceBlock(currentArrived) {
+    const next = { ...currentArrived };
+    const ordered = block.buses
+      .map((bus) => ({ bus, value: next[makeKey(block.id, bus)] }))
+      .filter((item) => isArrived(item.value))
+      .sort((a, b) => (getArrivalOrder(a.value) ?? 999) - (getArrivalOrder(b.value) ?? 999));
+
+    ordered.forEach((item, index) => {
+      const key = makeKey(block.id, item.bus);
+      next[key] = {
+        arrived: true,
+        order: index + 1,
+        time: getArrivalTime(item.value) ?? "Recorded",
+      };
+    });
+
+    return next;
+  }
+
+  function resetBlock() {
+    const next = { ...arrived };
+    block.buses.forEach((bus) => delete next[makeKey(block.id, bus)]);
+    setArrived(next);
+  }
+
+  function resetAll() {
+    setArrived({});
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-50 p-4 md:p-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <header className="flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+              <span aria-hidden="true">🚌</span> Chantilly Academy Shuttle Tracker
             </div>
-            <div class="percent">${stats.percent}%</div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">Bus Arrival Dashboard</h1>
+            <p className="mt-2 text-slate-600">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
           </div>
-          <div class="bar"><div class="bar-fill" style="width:${stats.percent}%"></div></div>
-        `;
-        tab.addEventListener("click", () => {
-          activeBlockId = block.id;
-          document.getElementById("searchInput").value = "";
-          render();
-        });
-        tabs.appendChild(tab);
-      });
-    }
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={resetBlock}
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition hover:bg-slate-50"
+            >
+              <span className="mr-2" aria-hidden="true">↻</span> Reset block
+            </button>
+            <button
+              type="button"
+              onClick={resetAll}
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition hover:bg-slate-200"
+            >
+              Reset all
+            </button>
+          </div>
+        </header>
 
-    function renderArrivalSequence(block) {
-      const sequence = getArrivalSequence(block);
-      document.getElementById("recordedCount").textContent = `${sequence.length} recorded`;
-      const container = document.getElementById("arrivalSequence");
-      if (sequence.length === 0) {
-        container.innerHTML = `<div class="empty">No buses have been marked arrived for this block yet.</div>`;
-        return;
-      }
-      const items = sequence.map(bus => `
-        <li class="order-item">
-          <div class="order-left">
-            <span class="order-number">${bus.order}</span>
-            <div>
-              <div class="order-school">${bus.school}</div>
-              <div class="order-bus">Bus ${bus.bus}</div>
+        <section className="grid gap-3 md:grid-cols-3">
+          {stats.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveBlock(item.id)}
+              className={`rounded-3xl border p-4 text-left shadow-sm transition ${
+                activeBlock === item.id ? "border-slate-950 bg-white" : "border-transparent bg-white/70 hover:bg-white"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-semibold text-slate-950">{item.label}</p>
+                  <p className="text-sm text-slate-500">{item.count} of {item.total} arrived</p>
+                </div>
+                <p className="text-2xl font-bold text-slate-900">{Math.round((item.count / item.total) * 100)}%</p>
+              </div>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-slate-900" style={{ width: `${(item.count / item.total) * 100}%` }} />
+              </div>
+            </button>
+          ))}
+        </section>
+
+        <section className="rounded-3xl border-0 bg-white shadow-sm">
+          <div className="p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-950">{block.label} Arrivals</h2>
+                <p className="text-slate-500">{block.subtitle} · {activeStats?.count ?? 0} of {activeStats?.total ?? 0} complete · {progress}%</p>
+              </div>
+              <label className="relative block md:w-80">
+                <span className="absolute left-3 top-2.5 text-slate-400" aria-hidden="true">🔍</span>
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search school, bus, or time"
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 outline-none ring-slate-300 focus:ring-2"
+                />
+              </label>
+            </div>
+
+            <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="text-lg font-bold text-slate-950">Arrival Order</h3>
+                <p className="text-sm text-slate-500">{arrivalSequence.length} recorded</p>
+              </div>
+
+              {arrivalSequence.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
+                  No buses have been marked arrived for this block yet.
+                </p>
+              ) : (
+                <ol className="grid gap-2 md:grid-cols-2">
+                  {arrivalSequence.map((bus) => (
+                    <li key={bus.key} className="flex items-center justify-between gap-3 rounded-2xl bg-green-700 p-3 text-white shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-green-700">
+                          {bus.order}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-white">{bus.school}</p>
+                          <p className="text-sm text-green-100">Bus {bus.bus} · {bus.time}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleArrival(bus)}
+                        className="rounded-xl bg-white/20 px-3 py-1 text-sm font-semibold text-white transition hover:bg-white/30"
+                      >
+                        Undo
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              {filteredBuses.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center text-sm text-slate-500">
+                  All matching buses have been added to the arrival order.
+                </p>
+              ) : null}
+
+              {filteredBuses.map((bus) => {
+                const arrivalValue = arrived[makeKey(block.id, bus)];
+                const busArrived = isArrived(arrivalValue);
+                const order = getArrivalOrder(arrivalValue);
+                const time = getArrivalTime(arrivalValue);
+
+                return (
+                  <button
+                    key={makeKey(block.id, bus)}
+                    onClick={() => toggleArrival(bus)}
+                    className={`flex items-center justify-between rounded-3xl border p-4 text-left transition ${
+                      busArrived ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white hover:border-slate-400"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${busArrived ? "bg-white text-slate-900" : "border border-slate-300 text-slate-300"}`} aria-hidden="true">
+                        {busArrived ? order : ""}
+                      </span>
+                      <div>
+                        <p className="text-lg font-semibold">{bus.school}</p>
+                        <p className={busArrived ? "text-sm text-slate-200" : "text-sm text-slate-500"}>Bus {bus.bus} · {bus.days}</p>
+                        {busArrived && <p className="mt-1 text-xs text-slate-300">Arrived #{order} at {time}</p>}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="inline-flex items-center gap-1 text-sm font-medium">
+                        <span aria-hidden="true">🕒</span> ETA {bus.eta}
+                      </div>
+                      <p className={busArrived ? "mt-1 text-xs text-slate-300" : "mt-1 text-xs text-slate-500"}>Departs {bus.departs}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-          <div class="order-time">${bus.time}</div>
-        </li>
-      `).join("");
-      container.innerHTML = `<ol class="order-list">${items}</ol>`;
-    }
-
-    function renderBusList(block) {
-      const query = document.getElementById("searchInput").value.toLowerCase().trim();
-      const list = document.getElementById("busList");
-      const filtered = block.buses.filter(bus => `${bus.school} ${bus.bus} ${bus.eta} ${bus.days}`.toLowerCase().includes(query));
-      if (filtered.length === 0) {
-        list.innerHTML = `<div class="empty">No buses match your search.</div>`;
-        return;
-      }
-      list.innerHTML = "";
-      filtered.forEach(bus => {
-        const value = arrived[makeKey(block.id, bus)];
-        const busArrived = isArrived(value);
-        const order = getArrivalOrder(value);
-        const time = getArrivalTime(value);
-        const row = document.createElement("button");
-        row.className = "bus-row" + (busArrived ? " arrived" : "");
-        row.innerHTML = `
-          <div class="bus-left">
-            <span class="check">${busArrived ? order : ""}</span>
-            <div>
-              <div class="school">${bus.school}</div>
-              <div class="details">Bus ${bus.bus} · ${bus.days}</div>
-              ${busArrived ? `<div class="arrived-line">Arrived #${order} at ${time}</div>` : ""}
-            </div>
-          </div>
-          <div class="bus-time">
-            <div>🕒 ETA ${bus.eta}</div>
-            <div class="time-small">Departs ${bus.departs}</div>
-          </div>
-        `;
-        row.addEventListener("click", () => toggleArrival(bus));
-        list.appendChild(row);
-      });
-    }
-
-    function render() {
-      const block = getActiveBlock();
-      const stats = getStats(block);
-      document.getElementById("blockTitle").textContent = `${block.label} Arrivals`;
-      document.getElementById("blockMeta").textContent = `${block.subtitle} · ${stats.count} of ${stats.total} complete · ${stats.percent}%`;
-      renderTabs();
-      renderArrivalSequence(block);
-      renderBusList(block);
-    }
-
-    document.getElementById("searchInput").addEventListener("input", () => renderBusList(getActiveBlock()));
-    document.getElementById("resetBlockButton").addEventListener("click", resetBlock);
-    document.getElementById("resetAllButton").addEventListener("click", resetAll);
-    render();
-  </script>
-</body>
-</html>
+        </section>
+      </div>
+    </main>
+  );
+}
