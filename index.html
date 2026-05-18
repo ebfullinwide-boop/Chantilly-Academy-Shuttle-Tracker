@@ -34,30 +34,30 @@
 
     header {
       background: var(--card);
-      border-radius: 22px;
+      border-radius: 24px;
       padding: 20px;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
       margin-bottom: 16px;
     }
 
     .top-row {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
       align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .badge {
       display: inline-flex;
-      gap: 8px;
       align-items: center;
+      gap: 8px;
       background: var(--light);
+      color: #334155;
       border-radius: 999px;
       padding: 7px 12px;
       font-size: 14px;
       font-weight: 700;
-      color: #334155;
       margin-bottom: 12px;
     }
 
@@ -65,18 +65,13 @@
       margin: 0;
       font-size: 30px;
       line-height: 1.1;
+      letter-spacing: -0.02em;
     }
 
     .subtitle {
-      color: var(--muted);
       margin: 10px 0 0;
+      color: var(--muted);
       font-size: 16px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
     }
 
     button {
@@ -85,13 +80,21 @@
       border: 0;
     }
 
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .small-button {
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 10px 14px;
       background: var(--light);
       color: var(--text);
+      font-size: 14px;
       font-weight: 700;
       border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
     }
 
     .small-button:hover { background: #e2e8f0; }
@@ -106,30 +109,37 @@
     .tab {
       background: var(--card);
       border: 2px solid transparent;
-      border-radius: 20px;
-      padding: 14px;
+      border-radius: 22px;
+      padding: 15px;
       text-align: left;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 1px 5px rgba(15, 23, 42, 0.06);
     }
 
     .tab.active { border-color: var(--dark); }
 
+    .tab-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
     .tab-title {
       font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 4px;
+      font-weight: 900;
+      margin: 0 0 5px;
     }
 
     .tab-count {
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 10px;
+      margin: 0 0 12px;
     }
 
     .percent {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 900;
-      float: right;
+      color: var(--dark);
     }
 
     .bar {
@@ -137,52 +147,35 @@
       background: var(--light);
       border-radius: 999px;
       overflow: hidden;
-      clear: both;
     }
 
     .bar-fill {
       height: 100%;
-      width: 0%;
       background: var(--dark);
       border-radius: 999px;
+      width: 0%;
     }
 
     .panel {
       background: var(--card);
-      border-radius: 22px;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
-      padding: 16px;
+      border-radius: 24px;
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+      padding: 18px;
     }
 
     .panel-head {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      align-items: start;
+      align-items: flex-start;
+      gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
     }
 
-    .panel h2 {
+    .panel-title {
       margin: 0;
-      font-size: 24px;
-    }
-
-    .title-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .time-pill {
-      display: inline-block;
-      border-radius: 999px;
-      background: var(--light);
-      color: #334155;
-      padding: 6px 10px;
-      font-size: 14px;
-      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: -0.02em;
     }
 
     .panel-meta {
@@ -190,35 +183,43 @@
       margin-top: 6px;
     }
 
-    .search-wrap {
-      position: relative;
-      width: min(100%, 340px);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 11px;
-      color: var(--muted);
-    }
-
-    .search {
-      width: 100%;
+    .time-card {
+      min-width: 280px;
+      background: var(--dark);
+      color: white;
+      border-radius: 24px;
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 11px 12px 11px 40px;
-      font-size: 16px;
+      padding: 16px 24px;
+      text-align: center;
+      box-shadow: 0 1px 5px rgba(15, 23, 42, 0.08);
     }
 
-    .arrival-order {
-      margin: 16px 0;
-      border: 1px solid var(--border);
+    .time-label {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .time-value {
+      margin: 4px 0 0;
+      font-size: 46px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .order-box {
       background: #f8fafc;
-      border-radius: 22px;
-      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 15px;
+      margin-bottom: 16px;
     }
 
-    .arrival-order-head {
+    .order-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -226,7 +227,7 @@
       margin-bottom: 12px;
     }
 
-    .arrival-order h3 {
+    .order-head h3 {
       margin: 0;
       font-size: 19px;
     }
@@ -234,40 +235,41 @@
     .recorded-count {
       color: var(--muted);
       font-size: 14px;
+      margin: 0;
     }
 
-    .order-list {
+    .arrival-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
     }
 
-    .order-item {
+    .arrival-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      border-radius: 16px;
+      gap: 12px;
       background: var(--green);
       color: white;
+      border-radius: 16px;
       padding: 12px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
     }
 
-    .order-left {
+    .arrival-left {
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
     }
 
-    .order-number {
+    .arrival-number {
+      width: 34px;
+      height: 34px;
       flex: 0 0 auto;
-      width: 32px;
-      height: 32px;
       display: grid;
       place-items: center;
       border-radius: 999px;
@@ -276,35 +278,37 @@
       font-weight: 900;
     }
 
-    .order-school {
-      font-weight: 800;
+    .arrival-school {
+      font-weight: 900;
+      margin: 0;
     }
 
-    .order-bus,
-    .order-time {
+    .arrival-details {
       color: var(--green-light);
       font-size: 14px;
+      margin: 2px 0 0;
     }
 
     .undo-button {
-      flex: 0 0 auto;
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.18);
+      padding: 7px 11px;
+      background: rgba(255, 255, 255, 0.2);
       color: white;
-      padding: 7px 10px;
-      font-size: 14px;
       font-weight: 800;
+      font-size: 14px;
     }
 
-    .undo-button:hover { background: rgba(255, 255, 255, 0.28); }
+    .undo-button:hover { background: rgba(255, 255, 255, 0.3); }
 
     .empty {
-      color: var(--muted);
-      padding: 18px;
-      text-align: center;
       border: 1px dashed #cbd5e1;
+      border-radius: 18px;
       background: white;
-      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
     }
 
     .bus-list {
@@ -318,20 +322,18 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      background: #ffffff;
+      background: white;
+      color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 14px;
       text-align: left;
-      color: var(--text);
+      transition: border-color 0.15s ease, transform 0.15s ease;
     }
 
-    .bus-row:hover { border-color: #94a3b8; }
-
-    .bus-row.arrived {
-      background: var(--dark);
-      color: white;
-      border-color: var(--dark);
+    .bus-row:hover {
+      border-color: #94a3b8;
+      transform: translateY(-1px);
     }
 
     .bus-left {
@@ -341,66 +343,54 @@
       min-width: 0;
     }
 
-    .check {
+    .circle {
       width: 40px;
       height: 40px;
       flex: 0 0 auto;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      color: #cbd5e1;
       display: grid;
       place-items: center;
-      border-radius: 999px;
-      border: 2px solid #cbd5e1;
       font-weight: 900;
       font-size: 18px;
-    }
-
-    .arrived .check {
-      background: white;
-      color: var(--dark);
-      border-color: white;
     }
 
     .school {
+      margin: 0 0 4px;
       font-size: 18px;
       font-weight: 900;
-      margin-bottom: 3px;
     }
 
     .details {
-      font-size: 14px;
+      margin: 0;
       color: var(--muted);
+      font-size: 14px;
     }
-
-    .arrival-note {
-      margin-top: 4px;
-      font-size: 13px;
-      color: #cbd5e1;
-    }
-
-    .arrived .details,
-    .arrived .time-small { color: #e2e8f0; }
 
     .bus-time {
       text-align: right;
       white-space: nowrap;
+      font-size: 14px;
       font-weight: 800;
     }
 
     .time-small {
-      font-size: 13px;
-      margin-top: 3px;
+      margin-top: 4px;
       color: var(--muted);
+      font-size: 13px;
       font-weight: 400;
     }
 
     @media (max-width: 760px) {
-      .tabs,
-      .order-list { grid-template-columns: 1fr; }
+      .tabs { grid-template-columns: 1fr; }
+      .arrival-list { grid-template-columns: 1fr; }
+      .panel-head { align-items: stretch; }
+      .time-card { min-width: 100%; }
+      .time-value { font-size: 44px; }
       h1 { font-size: 26px; }
       .bus-row { align-items: flex-start; }
-      .title-row { align-items: flex-start; }
-      .bus-time { font-size: 14px; }
-      .school { font-size: 17px; }
-      .search-wrap { width: 100%; }
+      .bus-time { font-size: 13px; }
     }
   </style>
 </head>
@@ -425,25 +415,22 @@
     <section class="panel">
       <div class="panel-head">
         <div>
-          <div class="title-row">
-            <h2 id="blockTitle">AM Arrivals</h2>
-            <span class="time-pill" id="currentTime">Current time: --</span>
-          </div>
+          <h2 class="panel-title" id="blockTitle">AM Arrivals</h2>
           <div class="panel-meta" id="blockMeta"></div>
         </div>
-        <label class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input class="search" id="searchInput" type="search" placeholder="Search school, bus, or time" />
-        </label>
+        <div class="time-card">
+          <p class="time-label">Current Time</p>
+          <p class="time-value" id="currentTime">--:--</p>
+        </div>
       </div>
 
-      <section class="arrival-order">
-        <div class="arrival-order-head">
+      <div class="order-box">
+        <div class="order-head">
           <h3>Arrival Order</h3>
-          <div class="recorded-count" id="recordedCount">0 recorded</div>
+          <p class="recorded-count" id="recordedCount">0 recorded</p>
         </div>
-        <div id="arrivalOrderList"></div>
-      </section>
+        <div id="arrivalOrder"></div>
+      </div>
 
       <div class="bus-list" id="busList"></div>
     </section>
@@ -526,11 +513,6 @@
       return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     }
 
-    function updateCurrentTime() {
-      const element = document.getElementById("currentTime");
-      if (element) element.textContent = `Current time: ${formatTime()}`;
-    }
-
     function loadArrivals() {
       try {
         return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
@@ -554,21 +536,6 @@
       return { total, count, percent };
     }
 
-    function getArrivalSequence(block) {
-      return block.buses
-        .map(bus => {
-          const value = arrived[makeKey(block.id, bus)];
-          return {
-            ...bus,
-            key: makeKey(block.id, bus),
-            order: getArrivalOrder(value),
-            time: getArrivalTime(value)
-          };
-        })
-        .filter(bus => bus.order !== null)
-        .sort((a, b) => a.order - b.order);
-    }
-
     function getNextOrder(block) {
       const orders = block.buses
         .map(bus => getArrivalOrder(arrived[makeKey(block.id, bus)]))
@@ -580,7 +547,7 @@
       const ordered = block.buses
         .map(bus => ({ bus, value: arrived[makeKey(block.id, bus)] }))
         .filter(item => isArrived(item.value))
-        .sort((a, b) => (getArrivalOrder(a.value) ?? 999) - (getArrivalOrder(b.value) ?? 999));
+        .sort((a, b) => (getArrivalOrder(a.value) || 999) - (getArrivalOrder(b.value) || 999));
 
       ordered.forEach((item, index) => {
         const key = makeKey(block.id, item.bus);
@@ -611,19 +578,20 @@
       render();
     }
 
-    function resetBlock() {
-      const block = getActiveBlock();
-      if (!confirm(`Reset ${block.label} arrivals?`)) return;
-      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
-      saveArrivals();
-      render();
+    function getArrivalSequence(block) {
+      return block.buses
+        .map(bus => ({
+          ...bus,
+          key: makeKey(block.id, bus),
+          order: getArrivalOrder(arrived[makeKey(block.id, bus)]),
+          time: getArrivalTime(arrived[makeKey(block.id, bus)])
+        }))
+        .filter(bus => bus.order !== null)
+        .sort((a, b) => a.order - b.order);
     }
 
-    function resetAll() {
-      if (!confirm("Reset all arrivals?")) return;
-      arrived = {};
-      saveArrivals();
-      render();
+    function updateCurrentTime() {
+      document.getElementById("currentTime").textContent = formatTime();
     }
 
     function renderTabs() {
@@ -635,14 +603,17 @@
         const button = document.createElement("button");
         button.className = "tab" + (block.id === activeBlockId ? " active" : "");
         button.innerHTML = `
-          <div class="percent">${stats.percent}%</div>
-          <div class="tab-title">${block.label}</div>
-          <div class="tab-count">${stats.count} of ${stats.total} arrived</div>
+          <div class="tab-top">
+            <div>
+              <p class="tab-title">${block.label}</p>
+              <p class="tab-count">${stats.count} of ${stats.total} arrived</p>
+            </div>
+            <div class="percent">${stats.percent}%</div>
+          </div>
           <div class="bar"><div class="bar-fill" style="width: ${stats.percent}%"></div></div>
         `;
         button.addEventListener("click", () => {
           activeBlockId = block.id;
-          document.getElementById("searchInput").value = "";
           render();
         });
         tabs.appendChild(button);
@@ -651,78 +622,61 @@
 
     function renderArrivalOrder(block) {
       const sequence = getArrivalSequence(block);
-      const container = document.getElementById("arrivalOrderList");
+      const arrivalOrder = document.getElementById("arrivalOrder");
       document.getElementById("recordedCount").textContent = `${sequence.length} recorded`;
 
       if (sequence.length === 0) {
-        container.innerHTML = `<div class="empty">No buses have been marked arrived for this block yet.</div>`;
+        arrivalOrder.innerHTML = `<p class="empty">No buses have been marked arrived for this block yet.</p>`;
         return;
       }
 
-      container.innerHTML = `
-        <ol class="order-list">
-          ${sequence.map(bus => `
-            <li class="order-item">
-              <div class="order-left">
-                <span class="order-number">${bus.order}</span>
-                <div>
-                  <div class="order-school">${bus.school}</div>
-                  <div class="order-bus">Bus ${bus.bus} · ${bus.time}</div>
-                </div>
-              </div>
-              <button class="undo-button" type="button" data-undo-key="${bus.key}">Undo</button>
-            </li>
-          `).join("")}
-        </ol>
-      `;
+      const list = document.createElement("ol");
+      list.className = "arrival-list";
 
-      container.querySelectorAll("[data-undo-key]").forEach(button => {
-        button.addEventListener("click", () => {
-          const key = button.getAttribute("data-undo-key");
-          const bus = block.buses.find(item => makeKey(block.id, item) === key);
-          if (bus) toggleArrival(bus);
-        });
+      sequence.forEach(bus => {
+        const item = document.createElement("li");
+        item.className = "arrival-item";
+        item.innerHTML = `
+          <div class="arrival-left">
+            <span class="arrival-number">${bus.order}</span>
+            <div>
+              <p class="arrival-school">${bus.school}</p>
+              <p class="arrival-details">Bus ${bus.bus} · ${bus.time}</p>
+            </div>
+          </div>
+          <button class="undo-button" type="button">Undo</button>
+        `;
+        item.querySelector(".undo-button").addEventListener("click", () => toggleArrival(bus));
+        list.appendChild(item);
       });
+
+      arrivalOrder.innerHTML = "";
+      arrivalOrder.appendChild(list);
     }
 
     function renderBusList(block) {
-      const stats = getStats(block);
-      const query = document.getElementById("searchInput").value.toLowerCase().trim();
       const busList = document.getElementById("busList");
-      const filteredBuses = block.buses.filter(bus => {
-        if (isArrived(arrived[makeKey(block.id, bus)])) return false;
-        const text = `${bus.school} ${bus.bus} ${bus.departs} ${bus.eta} ${bus.days}`.toLowerCase();
-        return text.includes(query);
-      });
-
-      document.getElementById("blockTitle").textContent = `${block.label} Arrivals`;
-      document.getElementById("blockMeta").textContent = `${block.subtitle} · ${stats.count} of ${stats.total} complete · ${stats.percent}%`;
+      const filteredBuses = block.buses.filter(bus => !isArrived(arrived[makeKey(block.id, bus)]));
       busList.innerHTML = "";
 
       if (filteredBuses.length === 0) {
-        busList.innerHTML = `<div class="empty">All matching buses have been added to the arrival order.</div>`;
+        busList.innerHTML = `<p class="empty">All buses have been added to the arrival order.</p>`;
         return;
       }
 
       filteredBuses.forEach(bus => {
-        const key = makeKey(block.id, bus);
-        const value = arrived[key];
-        const busArrived = isArrived(value);
-        const order = getArrivalOrder(value);
-        const time = getArrivalTime(value);
         const row = document.createElement("button");
-        row.className = "bus-row" + (busArrived ? " arrived" : "");
+        row.className = "bus-row";
         row.innerHTML = `
           <div class="bus-left">
-            <div class="check">${busArrived ? order : ""}</div>
+            <span class="circle"></span>
             <div>
-              <div class="school">${bus.school}</div>
-              <div class="details">Bus ${bus.bus} · ${bus.days}</div>
-              ${busArrived ? `<div class="arrival-note">Arrived #${order} at ${time}</div>` : ""}
+              <p class="school">${bus.school}</p>
+              <p class="details">Bus ${bus.bus} · ${bus.days}</p>
             </div>
           </div>
           <div class="bus-time">
-            🕒 ETA ${bus.eta}
+            <span>🕒</span> ETA ${bus.eta}
             <div class="time-small">Departs ${bus.departs}</div>
           </div>
         `;
@@ -733,19 +687,34 @@
 
     function render() {
       const block = getActiveBlock();
+      const stats = getStats(block);
+
+      document.getElementById("blockTitle").textContent = `${block.label} Arrivals`;
+      document.getElementById("blockMeta").textContent = `${block.subtitle} · ${stats.count} of ${stats.total} complete · ${stats.percent}%`;
+
       renderTabs();
       renderArrivalOrder(block);
       renderBusList(block);
       updateCurrentTime();
     }
 
-    document.getElementById("searchInput").addEventListener("input", () => renderBusList(getActiveBlock()));
-    document.getElementById("resetBlockButton").addEventListener("click", resetBlock);
-    document.getElementById("resetAllButton").addEventListener("click", resetAll);
+    document.getElementById("resetBlockButton").addEventListener("click", () => {
+      const block = getActiveBlock();
+      if (!confirm(`Reset ${block.label} arrivals?`)) return;
+      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
+      saveArrivals();
+      render();
+    });
 
-    updateCurrentTime();
-    setInterval(updateCurrentTime, 1000);
+    document.getElementById("resetAllButton").addEventListener("click", () => {
+      if (!confirm("Reset all arrivals?")) return;
+      arrived = {};
+      saveArrivals();
+      render();
+    });
+
     render();
+    setInterval(updateCurrentTime, 1000);
   </script>
 </body>
 </html>
