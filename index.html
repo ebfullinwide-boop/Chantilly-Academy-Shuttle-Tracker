@@ -14,7 +14,6 @@
       --dark: #0f172a;
       --light: #f1f5f9;
       --green: #15803d;
-      --green-dark: #166534;
       --green-light: #dcfce7;
     }
 
@@ -28,7 +27,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: 0 auto;
       padding: 16px;
     }
@@ -74,16 +73,16 @@
       font-size: 16px;
     }
 
-    button {
-      font: inherit;
-      cursor: pointer;
-      border: 0;
-    }
-
     .actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
     }
 
     .small-button {
@@ -153,14 +152,13 @@
       border-radius: 22px;
       box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
       padding: 16px;
-      margin-bottom: 16px;
     }
 
     .panel-head {
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      align-items: end;
+      align-items: start;
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
@@ -170,9 +168,21 @@
       font-size: 24px;
     }
 
-    .panel h3 {
-      margin: 0;
-      font-size: 19px;
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .time-pill {
+      display: inline-block;
+      border-radius: 999px;
+      background: var(--light);
+      color: #334155;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 800;
     }
 
     .panel-meta {
@@ -180,80 +190,98 @@
       margin-top: 6px;
     }
 
+    .search-wrap {
+      position: relative;
+      width: min(100%, 340px);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 11px;
+      color: var(--muted);
+    }
+
     .search {
-      width: min(100%, 320px);
+      width: 100%;
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 11px 12px;
+      padding: 11px 12px 11px 40px;
       font-size: 16px;
     }
 
     .arrival-order {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 20px;
+      margin: 16px 0;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      border-radius: 22px;
       padding: 14px;
-      margin-bottom: 16px;
     }
 
-    .section-heading {
+    .arrival-order-head {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
       align-items: center;
+      gap: 12px;
       margin-bottom: 12px;
     }
 
-    .section-count {
+    .arrival-order h3 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .recorded-count {
       color: var(--muted);
       font-size: 14px;
     }
 
-    .arrival-list {
+    .order-list {
       display: grid;
-      gap: 10px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
       margin: 0;
       padding: 0;
       list-style: none;
     }
 
-    .arrival-row {
+    .order-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      border-radius: 16px;
       background: var(--green);
-      color: #ffffff;
-      border-radius: 18px;
+      color: white;
       padding: 12px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
     }
 
-    .arrival-left {
+    .order-left {
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
     }
 
-    .arrival-number {
+    .order-number {
+      flex: 0 0 auto;
       width: 32px;
       height: 32px;
-      flex: 0 0 auto;
       display: grid;
       place-items: center;
       border-radius: 999px;
-      background: #ffffff;
-      color: var(--green-dark);
+      background: white;
+      color: var(--green);
       font-weight: 900;
     }
 
-    .arrival-school {
-      font-weight: 900;
-      margin-bottom: 2px;
+    .order-school {
+      font-weight: 800;
     }
 
-    .arrival-details {
+    .order-bus,
+    .order-time {
       color: var(--green-light);
       font-size: 14px;
     }
@@ -261,13 +289,23 @@
     .undo-button {
       flex: 0 0 auto;
       border-radius: 12px;
-      padding: 8px 11px;
-      font-weight: 800;
-      color: #ffffff;
       background: rgba(255, 255, 255, 0.18);
+      color: white;
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 800;
     }
 
     .undo-button:hover { background: rgba(255, 255, 255, 0.28); }
+
+    .empty {
+      color: var(--muted);
+      padding: 18px;
+      text-align: center;
+      border: 1px dashed #cbd5e1;
+      background: white;
+      border-radius: 16px;
+    }
 
     .bus-list {
       display: grid;
@@ -290,6 +328,12 @@
 
     .bus-row:hover { border-color: #94a3b8; }
 
+    .bus-row.arrived {
+      background: var(--dark);
+      color: white;
+      border-color: var(--dark);
+    }
+
     .bus-left {
       display: flex;
       align-items: center;
@@ -298,15 +342,21 @@
     }
 
     .check {
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
       flex: 0 0 auto;
       display: grid;
       place-items: center;
       border-radius: 999px;
       border: 2px solid #cbd5e1;
       font-weight: 900;
-      font-size: 20px;
+      font-size: 18px;
+    }
+
+    .arrived .check {
+      background: white;
+      color: var(--dark);
+      border-color: white;
     }
 
     .school {
@@ -319,6 +369,15 @@
       font-size: 14px;
       color: var(--muted);
     }
+
+    .arrival-note {
+      margin-top: 4px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .arrived .details,
+    .arrived .time-small { color: #e2e8f0; }
 
     .bus-time {
       text-align: right;
@@ -333,23 +392,15 @@
       font-weight: 400;
     }
 
-    .empty {
-      color: var(--muted);
-      padding: 18px;
-      text-align: center;
-      border: 1px dashed var(--border);
-      border-radius: 16px;
-      background: #ffffff;
-    }
-
-    @media (max-width: 700px) {
-      .container { padding: 12px; }
-      .tabs { grid-template-columns: 1fr; }
+    @media (max-width: 760px) {
+      .tabs,
+      .order-list { grid-template-columns: 1fr; }
       h1 { font-size: 26px; }
       .bus-row { align-items: flex-start; }
+      .title-row { align-items: flex-start; }
       .bus-time { font-size: 14px; }
       .school { font-size: 17px; }
-      .arrival-row { align-items: flex-start; }
+      .search-wrap { width: 100%; }
     }
   </style>
 </head>
@@ -360,11 +411,11 @@
         <div>
           <div class="badge">🚌 Chantilly Academy Shuttle Tracker</div>
           <h1>Bus Arrival Dashboard</h1>
-          <p class="subtitle">Tap a bus as it arrives. It moves into the green Arrival Order section.</p>
+          <p class="subtitle">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
         </div>
         <div class="actions">
-          <button class="small-button" id="resetBlockButton" type="button">↻ Reset block</button>
-          <button class="small-button" id="resetAllButton" type="button">Reset all</button>
+          <button class="small-button" id="resetBlockButton">↻ Reset block</button>
+          <button class="small-button" id="resetAllButton">Reset all</button>
         </div>
       </div>
     </header>
@@ -374,24 +425,26 @@
     <section class="panel">
       <div class="panel-head">
         <div>
-          <h2 id="blockTitle">AM Arrivals</h2>
+          <div class="title-row">
+            <h2 id="blockTitle">AM Arrivals</h2>
+            <span class="time-pill" id="currentTime">Current time: --</span>
+          </div>
           <div class="panel-meta" id="blockMeta"></div>
         </div>
-        <input class="search" id="searchInput" type="search" placeholder="Search school, bus, or time" />
+        <label class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search" id="searchInput" type="search" placeholder="Search school, bus, or time" />
+        </label>
       </div>
 
-      <div class="arrival-order">
-        <div class="section-heading">
+      <section class="arrival-order">
+        <div class="arrival-order-head">
           <h3>Arrival Order</h3>
-          <div class="section-count" id="arrivalCount">0 recorded</div>
+          <div class="recorded-count" id="recordedCount">0 recorded</div>
         </div>
-        <ul class="arrival-list" id="arrivalList"></ul>
-      </div>
+        <div id="arrivalOrderList"></div>
+      </section>
 
-      <div class="section-heading">
-        <h3>Choose a Bus</h3>
-        <div class="section-count" id="choiceCount">0 remaining</div>
-      </div>
       <div class="bus-list" id="busList"></div>
     </section>
   </div>
@@ -405,8 +458,8 @@
         buses: [
           { school: "Centreville", bus: "3102", departs: "9:45 AM", eta: "9:57 AM", days: "All" },
           { school: "Fairfax", bus: "3100", departs: "9:45 AM", eta: "10:12 AM", days: "All" },
-          { school: "Herndon #1", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
-           { school: "Herndon #2", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
+          { school: "Herndon", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
+          { school: "Herndon", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
           { school: "Robinson", bus: "3109", departs: "9:45 AM", eta: "10:10 AM", days: "All" },
           { school: "South Lakes", bus: "4105", departs: "9:45 AM", eta: "10:07 AM", days: "All" },
           { school: "Westfield", bus: "3113", departs: "9:45 AM", eta: "9:58 AM", days: "All" },
@@ -439,8 +492,8 @@
           { school: "Centreville", bus: "3206", departs: "1:10 PM", eta: "1:22 PM", days: "All" },
           { school: "Fairfax", bus: "3208", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
           { school: "Herndon", bus: "4202", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
-          { school: "Madison", bus: "4212", departs: "1:10 PM", eta: "1:36 PM", days: "All" },
-          { school: "McLean", bus: "3214", departs: "1:10 PM", eta: "1:50 PM", days: "A-Day" },
+          { school: "Madison", bus: "4204", departs: "1:10 PM", eta: "1:36 PM", days: "All" },
+          { school: "McLean", bus: "4212", departs: "1:10 PM", eta: "1:50 PM", days: "A-Day" },
           { school: "Robinson", bus: "3216", departs: "1:10 PM", eta: "1:35 PM", days: "All" },
           { school: "South Lakes", bus: "4215", departs: "1:10 PM", eta: "1:32 PM", days: "All" },
           { school: "Westfield", bus: "3221", departs: "1:10 PM", eta: "1:23 PM", days: "All" },
@@ -449,7 +502,7 @@
       }
     ];
 
-    const STORAGE_KEY = "chantilly-bus-arrivals-html-v3";
+    const STORAGE_KEY = "chantilly-bus-arrivals-v2";
     let activeBlockId = "am";
     let arrived = loadArrivals();
 
@@ -462,15 +515,20 @@
     }
 
     function getArrivalOrder(value) {
-      return value && typeof value === "object" ? value.order : null;
+      return typeof value === "object" && value ? value.order : null;
     }
 
     function getArrivalTime(value) {
-      return value && typeof value === "object" ? value.time : null;
+      return typeof value === "object" && value ? value.time : null;
     }
 
     function formatTime(date = new Date()) {
       return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    }
+
+    function updateCurrentTime() {
+      const element = document.getElementById("currentTime");
+      if (element) element.textContent = `Current time: ${formatTime()}`;
     }
 
     function loadArrivals() {
@@ -522,7 +580,7 @@
       const ordered = block.buses
         .map(bus => ({ bus, value: arrived[makeKey(block.id, bus)] }))
         .filter(item => isArrived(item.value))
-        .sort((a, b) => (getArrivalOrder(a.value) || 999) - (getArrivalOrder(b.value) || 999));
+        .sort((a, b) => (getArrivalOrder(a.value) ?? 999) - (getArrivalOrder(b.value) ?? 999));
 
       ordered.forEach((item, index) => {
         const key = makeKey(block.id, item.bus);
@@ -534,23 +592,36 @@
       });
     }
 
-    function markArrived(bus) {
+    function toggleArrival(bus) {
       const block = getActiveBlock();
       const key = makeKey(block.id, bus);
-      arrived[key] = {
-        arrived: true,
-        order: getNextOrder(block),
-        time: formatTime()
-      };
+
+      if (isArrived(arrived[key])) {
+        delete arrived[key];
+        resequenceBlock(block);
+      } else {
+        arrived[key] = {
+          arrived: true,
+          order: getNextOrder(block),
+          time: formatTime()
+        };
+      }
+
       saveArrivals();
       render();
     }
 
-    function undoArrival(bus) {
+    function resetBlock() {
       const block = getActiveBlock();
-      const key = makeKey(block.id, bus);
-      delete arrived[key];
-      resequenceBlock(block);
+      if (!confirm(`Reset ${block.label} arrivals?`)) return;
+      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
+      saveArrivals();
+      render();
+    }
+
+    function resetAll() {
+      if (!confirm("Reset all arrivals?")) return;
+      arrived = {};
       saveArrivals();
       render();
     }
@@ -563,7 +634,6 @@
         const stats = getStats(block);
         const button = document.createElement("button");
         button.className = "tab" + (block.id === activeBlockId ? " active" : "");
-        button.type = "button";
         button.innerHTML = `
           <div class="percent">${stats.percent}%</div>
           <div class="tab-title">${block.label}</div>
@@ -580,51 +650,53 @@
     }
 
     function renderArrivalOrder(block) {
-      const arrivalList = document.getElementById("arrivalList");
-      const arrivalCount = document.getElementById("arrivalCount");
       const sequence = getArrivalSequence(block);
-
-      arrivalCount.textContent = `${sequence.length} recorded`;
-      arrivalList.innerHTML = "";
+      const container = document.getElementById("arrivalOrderList");
+      document.getElementById("recordedCount").textContent = `${sequence.length} recorded`;
 
       if (sequence.length === 0) {
-        const empty = document.createElement("li");
-        empty.className = "empty";
-        empty.textContent = "No buses have been marked arrived for this block yet.";
-        arrivalList.appendChild(empty);
+        container.innerHTML = `<div class="empty">No buses have been marked arrived for this block yet.</div>`;
         return;
       }
 
-      sequence.forEach(bus => {
-        const row = document.createElement("li");
-        row.className = "arrival-row";
-        row.innerHTML = `
-          <div class="arrival-left">
-            <div class="arrival-number">${bus.order}</div>
-            <div>
-              <div class="arrival-school">${bus.school}</div>
-              <div class="arrival-details">Bus ${bus.bus} · ${bus.time}</div>
-            </div>
-          </div>
-          <button class="undo-button" type="button">Undo</button>
-        `;
-        row.querySelector(".undo-button").addEventListener("click", () => undoArrival(bus));
-        arrivalList.appendChild(row);
+      container.innerHTML = `
+        <ol class="order-list">
+          ${sequence.map(bus => `
+            <li class="order-item">
+              <div class="order-left">
+                <span class="order-number">${bus.order}</span>
+                <div>
+                  <div class="order-school">${bus.school}</div>
+                  <div class="order-bus">Bus ${bus.bus} · ${bus.time}</div>
+                </div>
+              </div>
+              <button class="undo-button" type="button" data-undo-key="${bus.key}">Undo</button>
+            </li>
+          `).join("")}
+        </ol>
+      `;
+
+      container.querySelectorAll("[data-undo-key]").forEach(button => {
+        button.addEventListener("click", () => {
+          const key = button.getAttribute("data-undo-key");
+          const bus = block.buses.find(item => makeKey(block.id, item) === key);
+          if (bus) toggleArrival(bus);
+        });
       });
     }
 
-    function renderChoiceList(block) {
+    function renderBusList(block) {
+      const stats = getStats(block);
       const query = document.getElementById("searchInput").value.toLowerCase().trim();
       const busList = document.getElementById("busList");
-      const choiceCount = document.getElementById("choiceCount");
-
       const filteredBuses = block.buses.filter(bus => {
         if (isArrived(arrived[makeKey(block.id, bus)])) return false;
         const text = `${bus.school} ${bus.bus} ${bus.departs} ${bus.eta} ${bus.days}`.toLowerCase();
         return text.includes(query);
       });
 
-      choiceCount.textContent = `${filteredBuses.length} remaining`;
+      document.getElementById("blockTitle").textContent = `${block.label} Arrivals`;
+      document.getElementById("blockMeta").textContent = `${block.subtitle} · ${stats.count} of ${stats.total} complete · ${stats.percent}%`;
       busList.innerHTML = "";
 
       if (filteredBuses.length === 0) {
@@ -633,56 +705,46 @@
       }
 
       filteredBuses.forEach(bus => {
+        const key = makeKey(block.id, bus);
+        const value = arrived[key];
+        const busArrived = isArrived(value);
+        const order = getArrivalOrder(value);
+        const time = getArrivalTime(value);
         const row = document.createElement("button");
-        row.className = "bus-row";
-        row.type = "button";
+        row.className = "bus-row" + (busArrived ? " arrived" : "");
         row.innerHTML = `
           <div class="bus-left">
-            <div class="check"></div>
+            <div class="check">${busArrived ? order : ""}</div>
             <div>
               <div class="school">${bus.school}</div>
               <div class="details">Bus ${bus.bus} · ${bus.days}</div>
+              ${busArrived ? `<div class="arrival-note">Arrived #${order} at ${time}</div>` : ""}
             </div>
           </div>
           <div class="bus-time">
-            ETA ${bus.eta}
+            🕒 ETA ${bus.eta}
             <div class="time-small">Departs ${bus.departs}</div>
           </div>
         `;
-        row.addEventListener("click", () => markArrived(bus));
+        row.addEventListener("click", () => toggleArrival(bus));
         busList.appendChild(row);
       });
     }
 
     function render() {
       const block = getActiveBlock();
-      const stats = getStats(block);
-
-      document.getElementById("blockTitle").textContent = `${block.label} Arrivals`;
-      document.getElementById("blockMeta").textContent = `${block.subtitle} · ${stats.count} of ${stats.total} complete · ${stats.percent}%`;
-
       renderTabs();
       renderArrivalOrder(block);
-      renderChoiceList(block);
+      renderBusList(block);
+      updateCurrentTime();
     }
 
-    document.getElementById("searchInput").addEventListener("input", () => renderChoiceList(getActiveBlock()));
+    document.getElementById("searchInput").addEventListener("input", () => renderBusList(getActiveBlock()));
+    document.getElementById("resetBlockButton").addEventListener("click", resetBlock);
+    document.getElementById("resetAllButton").addEventListener("click", resetAll);
 
-    document.getElementById("resetBlockButton").addEventListener("click", () => {
-      const block = getActiveBlock();
-      if (!confirm(`Reset ${block.label} arrivals?`)) return;
-      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
-      saveArrivals();
-      render();
-    });
-
-    document.getElementById("resetAllButton").addEventListener("click", () => {
-      if (!confirm("Reset all arrivals?")) return;
-      arrived = {};
-      saveArrivals();
-      render();
-    });
-
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
     render();
   </script>
 </body>
