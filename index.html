@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bus Arrival Tracker</title>
+  <title>Bus Arrival Dashboard</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -16,425 +16,346 @@
       --green: #15803d;
       --green-light: #dcfce7;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--text);
     }
-
     .container {
       max-width: 1100px;
       margin: 0 auto;
       padding: 16px;
     }
-
     header {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       background: var(--card);
       border-radius: 24px;
-      padding: 20px;
-      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(15,23,42,.08);
       margin-bottom: 16px;
     }
-
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      flex-wrap: wrap;
+    @media (min-width: 768px) {
+      header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
     }
-
     .badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: var(--light);
-      color: #334155;
       border-radius: 999px;
-      padding: 7px 12px;
+      background: var(--light);
+      padding: 6px 12px;
+      color: #334155;
       font-size: 14px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
-
     h1 {
       margin: 0;
       font-size: 30px;
       line-height: 1.1;
-      letter-spacing: -0.02em;
+      font-weight: 900;
+      color: var(--text);
     }
-
     .subtitle {
-      margin: 10px 0 0;
-      color: var(--muted);
+      margin: 8px 0 0;
+      color: #475569;
       font-size: 16px;
     }
-
-    button {
-      font: inherit;
-      cursor: pointer;
-      border: 0;
-    }
-
     .actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
-
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+    }
     .small-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 16px;
-      padding: 10px 14px;
-      background: var(--light);
-      color: var(--text);
+      padding: 10px 16px;
       font-size: 14px;
       font-weight: 700;
+      color: var(--text);
+      background: #ffffff;
       border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 1px 2px rgba(15,23,42,.05);
     }
-
-    .small-button:hover { background: #e2e8f0; }
-
+    .small-button.secondary { background: var(--light); }
     .tabs {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
-
+    @media (min-width: 768px) {
+      .tabs { grid-template-columns: repeat(3, 1fr); }
+    }
     .tab {
-      background: var(--card);
+      border-radius: 24px;
       border: 2px solid transparent;
-      border-radius: 22px;
-      padding: 15px;
+      background: rgba(255,255,255,.72);
+      padding: 16px;
       text-align: left;
-      box-shadow: 0 1px 5px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 1px 4px rgba(15,23,42,.07);
+      transition: .15s ease;
     }
-
-    .tab.active { border-color: var(--dark); }
-
+    .tab.active {
+      border-color: var(--dark);
+      background: #ffffff;
+    }
     .tab-top {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
+      align-items: center;
+      gap: 12px;
     }
-
     .tab-title {
+      margin: 0;
       font-size: 18px;
-      font-weight: 900;
-      margin: 0 0 5px;
+      font-weight: 800;
     }
-
     .tab-count {
+      margin: 4px 0 0;
       color: var(--muted);
       font-size: 14px;
-      margin: 0 0 12px;
     }
-
-    .percent {
-      font-size: 26px;
+    .tab-percent {
+      font-size: 24px;
       font-weight: 900;
-      color: var(--dark);
     }
-
     .bar {
+      margin-top: 16px;
       height: 8px;
-      background: var(--light);
-      border-radius: 999px;
       overflow: hidden;
+      border-radius: 999px;
+      background: var(--light);
     }
-
     .bar-fill {
       height: 100%;
-      background: var(--dark);
       border-radius: 999px;
-      width: 0%;
-    }
-
-    .panel {
-      background: var(--card);
-      border-radius: 24px;
-      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
-      padding: 18px;
-    }
-
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .panel-title {
-      margin: 0;
-      font-size: 26px;
-      letter-spacing: -0.02em;
-    }
-
-    .panel-meta {
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    .time-card {
-      min-width: 280px;
       background: var(--dark);
-      color: white;
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      padding: 16px 24px;
-      text-align: center;
-      box-shadow: 0 1px 5px rgba(15, 23, 42, 0.08);
     }
-
+    .panel {
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 1px 4px rgba(15,23,42,.08);
+      padding: 20px;
+    }
+    .time-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .time-card {
+      min-width: min(100%, 340px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--dark);
+      padding: 18px 24px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 1px 4px rgba(15,23,42,.1);
+    }
     .time-label {
       margin: 0;
-      color: #cbd5e1;
       font-size: 13px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .time-value {
-      margin: 4px 0 0;
-      font-size: 46px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-    }
-
-    .order-box {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 15px;
-      margin-bottom: 16px;
-    }
-
-    .order-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .order-head h3 {
-      margin: 0;
-      font-size: 19px;
-    }
-
-    .recorded-count {
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0;
-    }
-
-    .arrival-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .arrival-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      background: var(--green);
-      color: white;
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
-    }
-
-    .arrival-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .arrival-number {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border-radius: 999px;
-      background: white;
-      color: var(--green);
-      font-weight: 900;
-    }
-
-    .arrival-school {
-      font-weight: 900;
-      margin: 0;
-    }
-
-    .arrival-details {
-      color: var(--green-light);
-      font-size: 14px;
-      margin: 2px 0 0;
-    }
-
-    .undo-button {
-      border-radius: 12px;
-      padding: 7px 11px;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
       font-weight: 800;
-      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #cbd5e1;
     }
-
-    .undo-button:hover { background: rgba(255, 255, 255, 0.3); }
-
+    .current-time {
+      margin: 4px 0 0;
+      font-size: 42px;
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: -.04em;
+    }
+    @media (min-width: 768px) {
+      .current-time { font-size: 54px; }
+    }
+    .depart-time {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 1000;
+      letter-spacing: -.03em;
+    }
+    .order-section {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 24px;
+      padding: 16px;
+    }
+    .order-title {
+      margin: 0 0 12px;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text);
+    }
     .empty {
       border: 1px dashed #cbd5e1;
-      border-radius: 18px;
-      background: white;
+      background: #ffffff;
+      border-radius: 16px;
       padding: 16px;
       text-align: center;
       color: var(--muted);
       font-size: 14px;
+    }
+    .arrival-list, .choice-list {
+      list-style: none;
       margin: 0;
-    }
-
-    .bus-list {
+      padding: 0;
       display: grid;
-      gap: 10px;
-    }
-
-    .bus-row {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       gap: 12px;
-      background: white;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 14px;
-      text-align: left;
-      transition: border-color 0.15s ease, transform 0.15s ease;
     }
-
-    .bus-row:hover {
-      border-color: #94a3b8;
-      transform: translateY(-1px);
+    .arrival-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-radius: 16px;
+      background: var(--green);
+      padding: 12px;
+      color: white;
+      box-shadow: 0 1px 3px rgba(15,23,42,.08);
     }
-
-    .bus-left {
+    .arrival-left, .choice-left {
       display: flex;
       align-items: center;
       gap: 12px;
       min-width: 0;
     }
-
-    .circle {
-      width: 40px;
-      height: 40px;
+    .order-number {
       flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 56px;
+      width: 56px;
       border-radius: 999px;
-      border: 1px solid #cbd5e1;
-      color: #cbd5e1;
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-      font-size: 18px;
+      background: #ffffff;
+      color: var(--green);
+      font-size: 30px;
+      font-weight: 1000;
     }
-
-    .school {
-      margin: 0 0 4px;
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .details {
+    .arrival-school, .choice-school {
       margin: 0;
-      color: var(--muted);
+      font-size: 26px;
+      line-height: 1.05;
+      font-weight: 1000;
+    }
+    @media (min-width: 768px) {
+      .arrival-school, .choice-school { font-size: 32px; }
+    }
+    .arrival-meta {
+      margin: 4px 0 0;
+      color: var(--green-light);
       font-size: 14px;
     }
-
-    .bus-time {
-      text-align: right;
-      white-space: nowrap;
+    .undo-button {
+      flex: 0 0 auto;
+      border-radius: 12px;
+      background: rgba(255,255,255,.2);
+      color: white;
+      padding: 8px 12px;
       font-size: 14px;
       font-weight: 800;
     }
-
-    .time-small {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 400;
+    .choice-list { margin-top: 20px; }
+    .choice-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: #ffffff;
+      padding: 16px;
+      color: var(--text);
+      text-align: left;
+      transition: .15s ease;
     }
-
-    @media (max-width: 760px) {
-      .tabs { grid-template-columns: 1fr; }
-      .arrival-list { grid-template-columns: 1fr; }
-      .panel-head { align-items: stretch; }
-      .time-card { min-width: 100%; }
-      .time-value { font-size: 44px; }
-      h1 { font-size: 26px; }
-      .bus-row { align-items: flex-start; }
-      .bus-time { font-size: 13px; }
+    .choice-row:hover { border-color: #94a3b8; }
+    .circle {
+      flex: 0 0 auto;
+      height: 40px;
+      width: 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+    }
+    .choice-meta {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .eta {
+      flex: 0 0 auto;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .eta-small {
+      margin-top: 4px;
+      font-weight: 400;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 560px) {
+      .arrival-row, .choice-row { align-items: flex-start; }
+      .eta { font-size: 13px; }
+      .arrival-school, .choice-school { font-size: 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <main class="container">
     <header>
-      <div class="top-row">
-        <div>
-          <div class="badge">🚌 Chantilly Academy Shuttle Tracker</div>
-          <h1>Bus Arrival Dashboard</h1>
-          <p class="subtitle">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
-        </div>
-        <div class="actions">
-          <button class="small-button" id="resetBlockButton">↻ Reset block</button>
-          <button class="small-button" id="resetAllButton">Reset all</button>
-        </div>
+      <div>
+        <div class="badge"><span aria-hidden="true">🚌</span> Chantilly Academy Shuttle Tracker</div>
+        <h1>Bus Arrival Dashboard</h1>
+        <p class="subtitle">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
+      </div>
+      <div class="actions">
+        <button class="small-button" id="resetBlock"><span aria-hidden="true">↻</span>&nbsp; Reset block</button>
+        <button class="small-button secondary" id="resetAll">Reset all</button>
       </div>
     </header>
 
     <section class="tabs" id="tabs"></section>
 
     <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2 class="panel-title" id="blockTitle">AM Arrivals</h2>
-          <div class="panel-meta" id="blockMeta"></div>
-        </div>
+      <div class="time-row">
         <div class="time-card">
           <p class="time-label">Current Time</p>
-          <p class="time-value" id="currentTime">--:--</p>
+          <p class="current-time" id="currentTime"></p>
+          <p class="time-label" style="margin-top: 14px;">Buses depart at</p>
+          <p class="depart-time" id="departTime"></p>
         </div>
       </div>
 
-      <div class="order-box">
-        <div class="order-head">
-          <h3>Arrival Order</h3>
-          <p class="recorded-count" id="recordedCount">0 recorded</p>
-        </div>
-        <div id="arrivalOrder"></div>
-      </div>
+      <section class="order-section">
+        <h2 class="order-title" id="orderTitle"></h2>
+        <div id="arrivalListContainer"></div>
+      </section>
 
-      <div class="bus-list" id="busList"></div>
+      <div id="choiceListContainer"></div>
     </section>
-  </div>
+  </main>
 
   <script>
     const BLOCKS = [
@@ -445,8 +366,8 @@
         buses: [
           { school: "Centreville", bus: "3102", departs: "9:45 AM", eta: "9:57 AM", days: "All" },
           { school: "Fairfax", bus: "3100", departs: "9:45 AM", eta: "10:12 AM", days: "All" },
-          { school: "Herndon", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
-          { school: "Herndon", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
+          { school: "Herndon #2", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
+          { school: "Herndon #1", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
           { school: "Robinson", bus: "3109", departs: "9:45 AM", eta: "10:10 AM", days: "All" },
           { school: "South Lakes", bus: "4105", departs: "9:45 AM", eta: "10:07 AM", days: "All" },
           { school: "Westfield", bus: "3113", departs: "9:45 AM", eta: "9:58 AM", days: "All" },
@@ -490,59 +411,48 @@
     ];
 
     const STORAGE_KEY = "chantilly-bus-arrivals-v2";
-    let activeBlockId = "am";
-    let arrived = loadArrivals();
+    let activeBlock = "am";
+    let arrived = loadArrived();
 
     function makeKey(blockId, bus) {
       return `${blockId}-${bus.school}-${bus.bus}`;
     }
-
     function isArrived(value) {
       return Boolean(value === true || (value && value.arrived));
     }
-
     function getArrivalOrder(value) {
       return typeof value === "object" && value ? value.order : null;
     }
-
     function getArrivalTime(value) {
       return typeof value === "object" && value ? value.time : null;
     }
-
     function formatTime(date = new Date()) {
       return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     }
-
-    function loadArrivals() {
+    function loadArrived() {
       try {
         return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
       } catch (error) {
         return {};
       }
     }
-
-    function saveArrivals() {
+    function saveArrived() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived));
     }
-
-    function getActiveBlock() {
-      return BLOCKS.find(block => block.id === activeBlockId) || BLOCKS[0];
+    function getBlock() {
+      return BLOCKS.find(item => item.id === activeBlock) || BLOCKS[0];
     }
-
     function getStats(block) {
       const total = block.buses.length;
       const count = block.buses.filter(bus => isArrived(arrived[makeKey(block.id, bus)])).length;
-      const percent = Math.round((count / total) * 100);
-      return { total, count, percent };
+      return { total, count, percent: Math.round((count / total) * 100) };
     }
-
     function getNextOrder(block) {
       const orders = block.buses
         .map(bus => getArrivalOrder(arrived[makeKey(block.id, bus)]))
         .filter(order => typeof order === "number");
       return orders.length ? Math.max(...orders) + 1 : 1;
     }
-
     function resequenceBlock(block) {
       const ordered = block.buses
         .map(bus => ({ bus, value: arrived[makeKey(block.id, bus)] }))
@@ -550,19 +460,16 @@
         .sort((a, b) => (getArrivalOrder(a.value) || 999) - (getArrivalOrder(b.value) || 999));
 
       ordered.forEach((item, index) => {
-        const key = makeKey(block.id, item.bus);
-        arrived[key] = {
+        arrived[makeKey(block.id, item.bus)] = {
           arrived: true,
           order: index + 1,
           time: getArrivalTime(item.value) || "Recorded"
         };
       });
     }
-
     function toggleArrival(bus) {
-      const block = getActiveBlock();
+      const block = getBlock();
       const key = makeKey(block.id, bus);
-
       if (isArrived(arrived[key])) {
         delete arrived[key];
         resequenceBlock(block);
@@ -573,148 +480,129 @@
           time: formatTime()
         };
       }
-
-      saveArrivals();
+      saveArrived();
       render();
     }
-
-    function getArrivalSequence(block) {
-      return block.buses
-        .map(bus => ({
-          ...bus,
-          key: makeKey(block.id, bus),
-          order: getArrivalOrder(arrived[makeKey(block.id, bus)]),
-          time: getArrivalTime(arrived[makeKey(block.id, bus)])
-        }))
-        .filter(bus => bus.order !== null)
-        .sort((a, b) => a.order - b.order);
+    function resetBlock() {
+      const block = getBlock();
+      if (!confirm(`Reset ${block.label}?`)) return;
+      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
+      saveArrived();
+      render();
     }
-
-    function updateCurrentTime() {
-      document.getElementById("currentTime").textContent = formatTime();
+    function resetAll() {
+      if (!confirm("Reset all bus arrivals?")) return;
+      arrived = {};
+      saveArrived();
+      render();
     }
-
     function renderTabs() {
       const tabs = document.getElementById("tabs");
       tabs.innerHTML = "";
-
       BLOCKS.forEach(block => {
         const stats = getStats(block);
-        const button = document.createElement("button");
-        button.className = "tab" + (block.id === activeBlockId ? " active" : "");
-        button.innerHTML = `
+        const tab = document.createElement("button");
+        tab.className = "tab" + (block.id === activeBlock ? " active" : "");
+        tab.innerHTML = `
           <div class="tab-top">
             <div>
               <p class="tab-title">${block.label}</p>
               <p class="tab-count">${stats.count} of ${stats.total} arrived</p>
             </div>
-            <div class="percent">${stats.percent}%</div>
+            <div class="tab-percent">${stats.percent}%</div>
           </div>
           <div class="bar"><div class="bar-fill" style="width: ${stats.percent}%"></div></div>
         `;
-        button.addEventListener("click", () => {
-          activeBlockId = block.id;
+        tab.addEventListener("click", () => {
+          activeBlock = block.id;
           render();
         });
-        tabs.appendChild(button);
+        tabs.appendChild(tab);
       });
     }
+    function renderMain() {
+      const block = getBlock();
+      document.getElementById("departTime").textContent = block.buses[0]?.departs || "";
+      document.getElementById("orderTitle").textContent = `${block.label} Shuttle Bus Order`;
 
-    function renderArrivalOrder(block) {
-      const sequence = getArrivalSequence(block);
-      const arrivalOrder = document.getElementById("arrivalOrder");
-      document.getElementById("recordedCount").textContent = `${sequence.length} recorded`;
+      const arrivalSequence = block.buses
+        .map(bus => {
+          const value = arrived[makeKey(block.id, bus)];
+          return { ...bus, key: makeKey(block.id, bus), order: getArrivalOrder(value), time: getArrivalTime(value) };
+        })
+        .filter(bus => bus.order !== null)
+        .sort((a, b) => a.order - b.order);
 
-      if (sequence.length === 0) {
-        arrivalOrder.innerHTML = `<p class="empty">No buses have been marked arrived for this block yet.</p>`;
-        return;
-      }
-
-      const list = document.createElement("ol");
-      list.className = "arrival-list";
-
-      sequence.forEach(bus => {
-        const item = document.createElement("li");
-        item.className = "arrival-item";
-        item.innerHTML = `
-          <div class="arrival-left">
-            <span class="arrival-number">${bus.order}</span>
-            <div>
-              <p class="arrival-school">${bus.school}</p>
-              <p class="arrival-details">Bus ${bus.bus} · ${bus.time}</p>
+      const arrivalContainer = document.getElementById("arrivalListContainer");
+      if (arrivalSequence.length === 0) {
+        arrivalContainer.innerHTML = `<p class="empty">No buses have been marked arrived for this block yet.</p>`;
+      } else {
+        const ol = document.createElement("ol");
+        ol.className = "arrival-list";
+        arrivalSequence.forEach(bus => {
+          const li = document.createElement("li");
+          li.className = "arrival-row";
+          li.innerHTML = `
+            <div class="arrival-left">
+              <span class="order-number">${bus.order}</span>
+              <div>
+                <p class="arrival-school">${bus.school}</p>
+                <p class="arrival-meta">Bus ${bus.bus} · ${bus.time}</p>
+              </div>
             </div>
-          </div>
-          <button class="undo-button" type="button">Undo</button>
-        `;
-        item.querySelector(".undo-button").addEventListener("click", () => toggleArrival(bus));
-        list.appendChild(item);
-      });
-
-      arrivalOrder.innerHTML = "";
-      arrivalOrder.appendChild(list);
-    }
-
-    function renderBusList(block) {
-      const busList = document.getElementById("busList");
-      const filteredBuses = block.buses.filter(bus => !isArrived(arrived[makeKey(block.id, bus)]));
-      busList.innerHTML = "";
-
-      if (filteredBuses.length === 0) {
-        busList.innerHTML = `<p class="empty">All buses have been added to the arrival order.</p>`;
-        return;
+            <button class="undo-button" type="button">Undo</button>
+          `;
+          li.querySelector("button").addEventListener("click", () => toggleArrival(bus));
+          ol.appendChild(li);
+        });
+        arrivalContainer.innerHTML = "";
+        arrivalContainer.appendChild(ol);
       }
 
+      const filteredBuses = block.buses.filter(bus => !isArrived(arrived[makeKey(block.id, bus)]));
+      const choiceContainer = document.getElementById("choiceListContainer");
+      if (filteredBuses.length === 0) {
+        choiceContainer.innerHTML = `<p class="empty" style="margin-top:20px;">All buses have been added to the arrival order.</p>`;
+        return;
+      }
+      const list = document.createElement("div");
+      list.className = "choice-list";
       filteredBuses.forEach(bus => {
         const row = document.createElement("button");
-        row.className = "bus-row";
+        row.className = "choice-row";
+        row.type = "button";
         row.innerHTML = `
-          <div class="bus-left">
+          <div class="choice-left">
             <span class="circle"></span>
             <div>
-              <p class="school">${bus.school}</p>
-              <p class="details">Bus ${bus.bus} · ${bus.days}</p>
+              <p class="choice-school">${bus.school}</p>
+              <p class="choice-meta">Bus ${bus.bus} · ${bus.days}</p>
             </div>
           </div>
-          <div class="bus-time">
-            <span>🕒</span> ETA ${bus.eta}
-            <div class="time-small">Departs ${bus.departs}</div>
+          <div class="eta">
+            <span aria-hidden="true">🕒</span> ETA ${bus.eta}
+            <div class="eta-small">Departs ${bus.departs}</div>
           </div>
         `;
         row.addEventListener("click", () => toggleArrival(bus));
-        busList.appendChild(row);
+        list.appendChild(row);
       });
+      choiceContainer.innerHTML = "";
+      choiceContainer.appendChild(list);
     }
-
+    function updateClock() {
+      document.getElementById("currentTime").textContent = formatTime();
+    }
     function render() {
-      const block = getActiveBlock();
-      const stats = getStats(block);
-
-      document.getElementById("blockTitle").textContent = `${block.label} Arrivals`;
-      document.getElementById("blockMeta").textContent = `${block.subtitle} · ${stats.count} of ${stats.total} complete · ${stats.percent}%`;
-
+      updateClock();
       renderTabs();
-      renderArrivalOrder(block);
-      renderBusList(block);
-      updateCurrentTime();
+      renderMain();
     }
 
-    document.getElementById("resetBlockButton").addEventListener("click", () => {
-      const block = getActiveBlock();
-      if (!confirm(`Reset ${block.label} arrivals?`)) return;
-      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
-      saveArrivals();
-      render();
-    });
-
-    document.getElementById("resetAllButton").addEventListener("click", () => {
-      if (!confirm("Reset all arrivals?")) return;
-      arrived = {};
-      saveArrivals();
-      render();
-    });
-
+    document.getElementById("resetBlock").addEventListener("click", resetBlock);
+    document.getElementById("resetAll").addEventListener("click", resetAll);
+    setInterval(updateClock, 1000);
     render();
-    setInterval(updateCurrentTime, 1000);
   </script>
 </body>
 </html>
