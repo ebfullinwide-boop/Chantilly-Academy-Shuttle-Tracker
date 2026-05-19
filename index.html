@@ -3,606 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bus Arrival Dashboard</title>
+  <title>Bus Arrival Tracker</title>
   <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --dark: #0f172a;
-      --light: #f1f5f9;
-      --green: #15803d;
-      --green-light: #dcfce7;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    header {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      background: var(--card);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 1px 4px rgba(15,23,42,.08);
-      margin-bottom: 16px;
-    }
-    @media (min-width: 768px) {
-      header {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-      }
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      background: var(--light);
-      padding: 6px 12px;
-      color: #334155;
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1.1;
-      font-weight: 900;
-      color: var(--text);
-    }
-    .subtitle {
-      margin: 8px 0 0;
-      color: #475569;
-      font-size: 16px;
-    }
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    button {
-      font: inherit;
-      cursor: pointer;
-      border: 0;
-    }
-    .small-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 16px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      background: #ffffff;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 2px rgba(15,23,42,.05);
-    }
-    .small-button.secondary { background: var(--light); }
-    .tabs {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    @media (min-width: 768px) {
-      .tabs { grid-template-columns: repeat(3, 1fr); }
-    }
-    .tab {
-      border-radius: 24px;
-      border: 2px solid transparent;
-      background: rgba(255,255,255,.72);
-      padding: 16px;
-      text-align: left;
-      box-shadow: 0 1px 4px rgba(15,23,42,.07);
-      transition: .15s ease;
-    }
-    .tab.active {
-      border-color: var(--dark);
-      background: #ffffff;
-    }
-    .tab-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .tab-title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-    }
-    .tab-count {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .tab-percent {
-      font-size: 24px;
-      font-weight: 900;
-    }
-    .bar {
-      margin-top: 16px;
-      height: 8px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: var(--light);
-    }
-    .bar-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: var(--dark);
-    }
-    .panel {
-      border-radius: 24px;
-      background: #ffffff;
-      box-shadow: 0 1px 4px rgba(15,23,42,.08);
-      padding: 20px;
-    }
-    .time-row {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    .time-card {
-      min-width: min(100%, 340px);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background: var(--dark);
-      padding: 18px 24px;
-      text-align: center;
-      color: white;
-      box-shadow: 0 1px 4px rgba(15,23,42,.1);
-    }
-    .time-label {
-      margin: 0;
-      font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: #cbd5e1;
-    }
-    .current-time {
-      margin: 4px 0 0;
-      font-size: 42px;
-      line-height: 1;
-      font-weight: 1000;
-      letter-spacing: -.04em;
-    }
-    @media (min-width: 768px) {
-      .current-time { font-size: 54px; }
-    }
-    .depart-time {
-      margin: 0;
-      font-size: 28px;
-      line-height: 1.1;
-      font-weight: 1000;
-      letter-spacing: -.03em;
-    }
-    .order-section {
-      margin-top: 20px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      border-radius: 24px;
-      padding: 16px;
-    }
-    .order-title {
-      margin: 0 0 12px;
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--text);
-    }
-    .empty {
-      border: 1px dashed #cbd5e1;
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .arrival-list, .choice-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 12px;
-    }
-    .arrival-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      border-radius: 16px;
-      background: var(--green);
-      padding: 12px;
-      color: white;
-      box-shadow: 0 1px 3px rgba(15,23,42,.08);
-    }
-    .arrival-left, .choice-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-    .order-number {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 56px;
-      width: 56px;
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--green);
-      font-size: 30px;
-      font-weight: 1000;
-    }
-    .arrival-school, .choice-school {
-      margin: 0;
-      font-size: 26px;
-      line-height: 1.05;
-      font-weight: 1000;
-    }
-    @media (min-width: 768px) {
-      .arrival-school, .choice-school { font-size: 32px; }
-    }
-    .arrival-meta {
-      margin: 4px 0 0;
-      color: var(--green-light);
-      font-size: 14px;
-    }
-    .undo-button {
-      flex: 0 0 auto;
-      border-radius: 12px;
-      background: rgba(255,255,255,.2);
-      color: white;
-      padding: 8px 12px;
-      font-size: 14px;
-      font-weight: 800;
-    }
-    .choice-list { margin-top: 20px; }
-    .choice-row {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background: #ffffff;
-      padding: 16px;
-      color: var(--text);
-      text-align: left;
-      transition: .15s ease;
-    }
-    .choice-row:hover { border-color: #94a3b8; }
-    .circle {
-      flex: 0 0 auto;
-      height: 40px;
-      width: 40px;
-      border: 1px solid #cbd5e1;
-      border-radius: 999px;
-    }
-    .choice-meta {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .eta {
-      flex: 0 0 auto;
-      text-align: right;
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .eta-small {
-      margin-top: 4px;
-      font-weight: 400;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    @media (max-width: 560px) {
-      .arrival-row, .choice-row { align-items: flex-start; }
-      .eta { font-size: 13px; }
-      .arrival-school, .choice-school { font-size: 24px; }
-    }
+    :root{--bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--dark:#0f172a;--light:#f1f5f9;--green:#15803d;--green2:#dcfce7}
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .container{max-width:1100px;margin:0 auto;padding:16px}.header{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;background:var(--card);border-radius:24px;padding:20px;box-shadow:0 1px 5px rgba(15,23,42,.08);margin-bottom:16px}.badge{display:inline-flex;gap:8px;align-items:center;background:var(--light);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:700;color:#334155;margin-bottom:10px}h1{margin:0;font-size:30px}.subtitle{margin:8px 0 0;color:var(--muted)}.actions{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}button{font:inherit;cursor:pointer;border:0}.small-button{border-radius:14px;padding:10px 14px;background:var(--light);color:var(--text);font-weight:700;border:1px solid var(--border)}.small-button:hover{background:#e2e8f0}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.tab{background:var(--card);border:2px solid transparent;border-radius:22px;padding:14px;text-align:left;box-shadow:0 1px 5px rgba(15,23,42,.06)}.tab.active{border-color:var(--dark)}.tab-title{font-size:18px;font-weight:900;margin-bottom:4px}.tab-count{color:var(--muted);font-size:14px;margin-bottom:10px}.percent{float:right;font-size:24px;font-weight:900}.bar{height:8px;background:var(--light);border-radius:999px;overflow:hidden;clear:both}.bar-fill{height:100%;background:var(--dark);border-radius:999px;width:0}
+    .panel{background:var(--card);border-radius:24px;box-shadow:0 1px 5px rgba(15,23,42,.08);padding:18px}.time-wrap{display:flex;justify-content:center;margin-bottom:20px}.time-card{min-width:320px;text-align:center;color:white;background:var(--dark);border-radius:24px;padding:18px 24px;box-shadow:0 1px 5px rgba(15,23,42,.1)}.time-label{margin:0;color:#cbd5e1;text-transform:uppercase;letter-spacing:.08em;font-size:14px;font-weight:800}.current-time{margin:4px 0 0;font-size:50px;line-height:1;font-weight:950;letter-spacing:-.04em}.depart-label{margin:14px 0 0;color:#cbd5e1;text-transform:uppercase;letter-spacing:.08em;font-size:14px;font-weight:800}.depart-time{margin:2px 0 0;font-size:28px;font-weight:950}
+    .order-box{background:#f8fafc;border:1px solid var(--border);border-radius:24px;padding:16px;margin-bottom:16px}.order-title{font-size:26px;font-weight:950;margin:0 0 12px}.empty{color:var(--muted);padding:18px;text-align:center;border:1px dashed #cbd5e1;border-radius:16px;background:white}.arrival-list{display:grid;gap:12px;margin:0;padding-left:0;list-style:none}.arrival-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--green);color:white;border-radius:18px;padding:12px;box-shadow:0 1px 4px rgba(15,23,42,.1)}.arrival-left{display:flex;align-items:center;gap:14px;min-width:0}.order-number{width:58px;height:58px;flex:0 0 auto;display:grid;place-items:center;border-radius:999px;background:white;color:var(--green);font-size:34px;font-weight:950}.arrival-school{font-size:28px;font-weight:950;line-height:1.05}.arrival-details{color:var(--green2);font-size:14px;margin-top:4px}.undo{border-radius:12px;background:rgba(255,255,255,.2);color:white;font-weight:800;padding:8px 11px}.undo:hover{background:rgba(255,255,255,.3)}
+    .bus-list{display:grid;gap:10px}.bus-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:22px;padding:14px;text-align:left;color:var(--text)}.bus-row:hover{border-color:#94a3b8}.bus-left{display:flex;align-items:center;gap:12px;min-width:0}.circle{width:42px;height:42px;border-radius:999px;border:2px solid #cbd5e1;flex:0 0 auto}.school{font-size:28px;font-weight:950;line-height:1.05}.details{font-size:14px;color:var(--muted);margin-top:4px}.bus-time{text-align:right;white-space:nowrap;font-weight:800}.time-small{font-size:13px;margin-top:3px;color:var(--muted);font-weight:400}.save-note{margin-top:12px;text-align:center;color:var(--muted);font-size:13px}
+    @media (max-width:700px){.container{padding:10px}.tabs{grid-template-columns:1fr}.header{padding:16px}h1{font-size:25px}.time-card{min-width:100%}.current-time{font-size:46px}.arrival-school,.school{font-size:24px}.bus-row,.arrival-item{align-items:flex-start}.bus-time{font-size:14px}.order-number{width:54px;height:54px;font-size:32px}}
   </style>
 </head>
 <body>
-  <main class="container">
-    <header>
+  <div class="container">
+    <header class="header">
       <div>
-        <div class="badge"><span aria-hidden="true">🚌</span> Chantilly Academy Shuttle Tracker</div>
+        <div class="badge">🚌 Chantilly Academy Shuttle Tracker</div>
         <h1>Bus Arrival Dashboard</h1>
-        <p class="subtitle">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
+        <p class="subtitle">Tap a bus as it arrives. The app records arrival order and saves each arrival to Google Sheets.</p>
       </div>
       <div class="actions">
-        <button class="small-button" id="resetBlock"><span aria-hidden="true">↻</span>&nbsp; Reset block</button>
-        <button class="small-button secondary" id="resetAll">Reset all</button>
+        <button class="small-button" id="resetBlockButton">↻ Reset block</button>
+        <button class="small-button" id="resetAllButton">Reset all</button>
       </div>
     </header>
 
     <section class="tabs" id="tabs"></section>
 
     <section class="panel">
-      <div class="time-row">
+      <div class="time-wrap">
         <div class="time-card">
           <p class="time-label">Current Time</p>
-          <p class="current-time" id="currentTime"></p>
-          <p class="time-label" style="margin-top: 14px;">Buses depart at</p>
-          <p class="depart-time" id="departTime"></p>
+          <p class="current-time" id="currentTime">--:--</p>
+          <p class="depart-label">Buses depart at</p>
+          <p class="depart-time" id="departTime">--:--</p>
         </div>
       </div>
 
-      <section class="order-section">
-        <h2 class="order-title" id="orderTitle"></h2>
-        <div id="arrivalListContainer"></div>
-      </section>
+      <div class="order-box">
+        <h2 class="order-title" id="orderTitle">AM Shuttle Bus Order</h2>
+        <div id="arrivalList"></div>
+      </div>
 
-      <div id="choiceListContainer"></div>
+      <div class="bus-list" id="busList"></div>
+      <p class="save-note" id="saveNote">Google Sheet saving is turned on.</p>
     </section>
-  </main>
+  </div>
 
-  <script>
-    const BLOCKS = [
-      {
-        id: "am",
-        label: "AM",
-        subtitle: "Periods 1 & 2",
-        buses: [
-          { school: "Centreville", bus: "3102", departs: "9:45 AM", eta: "9:57 AM", days: "All" },
-          { school: "Fairfax", bus: "3100", departs: "9:45 AM", eta: "10:12 AM", days: "All" },
-          { school: "Herndon #2", bus: "4101", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
-          { school: "Herndon #1", bus: "4108", departs: "9:45 AM", eta: "10:08 AM", days: "All" },
-          { school: "Robinson", bus: "3109", departs: "9:45 AM", eta: "10:10 AM", days: "All" },
-          { school: "South Lakes", bus: "4105", departs: "9:45 AM", eta: "10:07 AM", days: "All" },
-          { school: "Westfield", bus: "3113", departs: "9:45 AM", eta: "9:58 AM", days: "All" },
-          { school: "Woodson", bus: "2101", departs: "9:45 AM", eta: "10:12 AM", days: "All" }
-        ]
-      },
-      {
-        id: "mid1",
-        label: "Mid Day 1",
-        subtitle: "Periods 3 & 4",
-        buses: [
-          { school: "Centreville", bus: "3205", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
-          { school: "Fairfax", bus: "3207", departs: "11:15 AM", eta: "11:38 AM", days: "All" },
-          { school: "Falls Church", bus: "2233", departs: "11:15 AM", eta: "11:51 AM", days: "A-Day" },
-          { school: "Herndon", bus: "4200", departs: "11:15 AM", eta: "11:38 AM", days: "All" },
-          { school: "Madison", bus: "4203", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
-          { school: "Marshall/ McLean", bus: "4211", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
-          { school: "Oakton", bus: "3204", departs: "11:15 AM", eta: "11:30 AM", days: "All" },
-          { school: "Robinson", bus: "3215", departs: "11:15 AM", eta: "11:40 AM", days: "All" },
-          { school: "South Lakes", bus: "4214", departs: "11:15 AM", eta: "11:37 AM", days: "All" },
-          { school: "Westfield", bus: "3219", departs: "11:15 AM", eta: "11:28 AM", days: "All" },
-          { school: "Woodson", bus: "2225", departs: "11:15 AM", eta: "11:40 AM", days: "All" }
-        ]
-      },
-      {
-        id: "mid2",
-        label: "Mid Day 2",
-        subtitle: "Periods 5 & 6",
-        buses: [
-          { school: "Centreville", bus: "3206", departs: "1:10 PM", eta: "1:22 PM", days: "All" },
-          { school: "Fairfax", bus: "3208", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
-          { school: "Herndon", bus: "4202", departs: "1:10 PM", eta: "1:33 PM", days: "All" },
-          { school: "Madison", bus: "4204", departs: "1:10 PM", eta: "1:36 PM", days: "All" },
-          { school: "McLean", bus: "4212", departs: "1:10 PM", eta: "1:50 PM", days: "A-Day" },
-          { school: "Robinson", bus: "3216", departs: "1:10 PM", eta: "1:35 PM", days: "All" },
-          { school: "South Lakes", bus: "4215", departs: "1:10 PM", eta: "1:32 PM", days: "All" },
-          { school: "Westfield", bus: "3221", departs: "1:10 PM", eta: "1:23 PM", days: "All" },
-          { school: "Woodson", bus: "2250", departs: "1:10 PM", eta: "1:37 PM", days: "All" }
-        ]
-      }
-    ];
+<script>
+const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/a/macros/fcpsschools.net/s/AKfycby4d7iveE0zpgAtOWmhxlQsSMlXH94r4ip_-B10v9AKFvyfjZaApI90PgIhjheiJXPn7w/exec";
+const STORAGE_KEY = "chantilly-bus-arrivals-html-v3";
+const BLOCKS = [
+  {id:"am",label:"AM",subtitle:"Periods 1 & 2",buses:[
+    {school:"Centreville",bus:"3102",departs:"9:45 AM",eta:"9:57 AM",days:"All"},
+    {school:"Fairfax",bus:"3100",departs:"9:45 AM",eta:"10:12 AM",days:"All"},
+    {school:"Herndon #2",bus:"4101",departs:"9:45 AM",eta:"10:08 AM",days:"All"},
+    {school:"Herndon #1",bus:"4108",departs:"9:45 AM",eta:"10:08 AM",days:"All"},
+    {school:"Robinson",bus:"3109",departs:"9:45 AM",eta:"10:10 AM",days:"All"},
+    {school:"South Lakes",bus:"4105",departs:"9:45 AM",eta:"10:07 AM",days:"All"},
+    {school:"Westfield",bus:"3113",departs:"9:45 AM",eta:"9:58 AM",days:"All"},
+    {school:"Woodson",bus:"2101",departs:"9:45 AM",eta:"10:12 AM",days:"All"}
+  ]},
+  {id:"mid1",label:"Mid Day 1",subtitle:"Periods 3 & 4",buses:[
+    {school:"Centreville",bus:"3205",departs:"11:15 AM",eta:"11:30 AM",days:"All"},
+    {school:"Fairfax",bus:"3207",departs:"11:15 AM",eta:"11:38 AM",days:"All"},
+    {school:"Falls Church",bus:"2233",departs:"11:15 AM",eta:"11:51 AM",days:"A-Day"},
+    {school:"Herndon",bus:"4200",departs:"11:15 AM",eta:"11:38 AM",days:"All"},
+    {school:"Madison",bus:"4203",departs:"11:15 AM",eta:"11:40 AM",days:"All"},
+    {school:"Marshall/ McLean",bus:"4211",departs:"11:15 AM",eta:"11:30 AM",days:"All"},
+    {school:"Oakton",bus:"3204",departs:"11:15 AM",eta:"11:30 AM",days:"All"},
+    {school:"Robinson",bus:"3215",departs:"11:15 AM",eta:"11:40 AM",days:"All"},
+    {school:"South Lakes",bus:"4214",departs:"11:15 AM",eta:"11:37 AM",days:"All"},
+    {school:"Westfield",bus:"3219",departs:"11:15 AM",eta:"11:28 AM",days:"All"},
+    {school:"Woodson",bus:"2225",departs:"11:15 AM",eta:"11:40 AM",days:"All"}
+  ]},
+  {id:"mid2",label:"Mid Day 2",subtitle:"Periods 5 & 6",buses:[
+    {school:"Centreville",bus:"3206",departs:"1:10 PM",eta:"1:22 PM",days:"All"},
+    {school:"Fairfax",bus:"3208",departs:"1:10 PM",eta:"1:33 PM",days:"All"},
+    {school:"Herndon",bus:"4202",departs:"1:10 PM",eta:"1:33 PM",days:"All"},
+    {school:"Madison",bus:"4204",departs:"1:10 PM",eta:"1:36 PM",days:"All"},
+    {school:"McLean",bus:"4212",departs:"1:10 PM",eta:"1:50 PM",days:"A-Day"},
+    {school:"Robinson",bus:"3216",departs:"1:10 PM",eta:"1:35 PM",days:"All"},
+    {school:"South Lakes",bus:"4215",departs:"1:10 PM",eta:"1:32 PM",days:"All"},
+    {school:"Westfield",bus:"3221",departs:"1:10 PM",eta:"1:23 PM",days:"All"},
+    {school:"Woodson",bus:"2250",departs:"1:10 PM",eta:"1:37 PM",days:"All"}
+  ]}
+];
+let activeBlockId = "am";
+let arrived = loadArrivals();
 
-    const STORAGE_KEY = "chantilly-bus-arrivals-v2";
-    let activeBlock = "am";
-    let arrived = loadArrived();
+function makeKey(blockId,bus){return `${blockId}-${bus.school}-${bus.bus}`}
+function isArrived(value){return Boolean(value===true || (value && value.arrived))}
+function getArrivalOrder(value){return typeof value==="object" && value ? value.order : null}
+function getArrivalTime(value){return typeof value==="object" && value ? value.time : null}
+function formatTime(date=new Date()){return date.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}
+function formatDate(date=new Date()){const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,"0");const d=String(date.getDate()).padStart(2,"0");return `${y}-${m}-${d}`}
+function loadArrivals(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{}}catch(e){return {}}}
+function saveArrivals(){localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived))}
+function getActiveBlock(){return BLOCKS.find(b=>b.id===activeBlockId)||BLOCKS[0]}
+function getStats(block){const total=block.buses.length;const count=block.buses.filter(bus=>isArrived(arrived[makeKey(block.id,bus)])).length;return {total,count,percent:Math.round((count/total)*100)}}
+function setSaveNote(text){document.getElementById("saveNote").textContent=text}
+function saveArrivalToGoogleSheet(record){
+  if(!GOOGLE_SHEET_WEB_APP_URL) return;
+  setSaveNote("Saving to Google Sheet...");
+  fetch(GOOGLE_SHEET_WEB_APP_URL, {
+    method:"POST",
+    mode:"no-cors",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(record)
+  }).then(()=>setSaveNote("Saved to Google Sheet."))
+    .catch(()=>setSaveNote("Could not save to Google Sheet. Check the Apps Script deployment."));
+}
+function updateClock(){document.getElementById("currentTime").textContent=formatTime()}
+setInterval(updateClock,1000);
 
-    function makeKey(blockId, bus) {
-      return `${blockId}-${bus.school}-${bus.bus}`;
-    }
-    function isArrived(value) {
-      return Boolean(value === true || (value && value.arrived));
-    }
-    function getArrivalOrder(value) {
-      return typeof value === "object" && value ? value.order : null;
-    }
-    function getArrivalTime(value) {
-      return typeof value === "object" && value ? value.time : null;
-    }
-    function formatTime(date = new Date()) {
-      return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    }
-    function loadArrived() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      } catch (error) {
-        return {};
-      }
-    }
-    function saveArrived() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived));
-    }
-    function getBlock() {
-      return BLOCKS.find(item => item.id === activeBlock) || BLOCKS[0];
-    }
-    function getStats(block) {
-      const total = block.buses.length;
-      const count = block.buses.filter(bus => isArrived(arrived[makeKey(block.id, bus)])).length;
-      return { total, count, percent: Math.round((count / total) * 100) };
-    }
-    function getNextOrder(block) {
-      const orders = block.buses
-        .map(bus => getArrivalOrder(arrived[makeKey(block.id, bus)]))
-        .filter(order => typeof order === "number");
-      return orders.length ? Math.max(...orders) + 1 : 1;
-    }
-    function resequenceBlock(block) {
-      const ordered = block.buses
-        .map(bus => ({ bus, value: arrived[makeKey(block.id, bus)] }))
-        .filter(item => isArrived(item.value))
-        .sort((a, b) => (getArrivalOrder(a.value) || 999) - (getArrivalOrder(b.value) || 999));
-
-      ordered.forEach((item, index) => {
-        arrived[makeKey(block.id, item.bus)] = {
-          arrived: true,
-          order: index + 1,
-          time: getArrivalTime(item.value) || "Recorded"
-        };
-      });
-    }
-    function toggleArrival(bus) {
-      const block = getBlock();
-      const key = makeKey(block.id, bus);
-      if (isArrived(arrived[key])) {
-        delete arrived[key];
-        resequenceBlock(block);
-      } else {
-        arrived[key] = {
-          arrived: true,
-          order: getNextOrder(block),
-          time: formatTime()
-        };
-      }
-      saveArrived();
-      render();
-    }
-    function resetBlock() {
-      const block = getBlock();
-      if (!confirm(`Reset ${block.label}?`)) return;
-      block.buses.forEach(bus => delete arrived[makeKey(block.id, bus)]);
-      saveArrived();
-      render();
-    }
-    function resetAll() {
-      if (!confirm("Reset all bus arrivals?")) return;
-      arrived = {};
-      saveArrived();
-      render();
-    }
-    function renderTabs() {
-      const tabs = document.getElementById("tabs");
-      tabs.innerHTML = "";
-      BLOCKS.forEach(block => {
-        const stats = getStats(block);
-        const tab = document.createElement("button");
-        tab.className = "tab" + (block.id === activeBlock ? " active" : "");
-        tab.innerHTML = `
-          <div class="tab-top">
-            <div>
-              <p class="tab-title">${block.label}</p>
-              <p class="tab-count">${stats.count} of ${stats.total} arrived</p>
-            </div>
-            <div class="tab-percent">${stats.percent}%</div>
-          </div>
-          <div class="bar"><div class="bar-fill" style="width: ${stats.percent}%"></div></div>
-        `;
-        tab.addEventListener("click", () => {
-          activeBlock = block.id;
-          render();
-        });
-        tabs.appendChild(tab);
-      });
-    }
-    function renderMain() {
-      const block = getBlock();
-      document.getElementById("departTime").textContent = block.buses[0]?.departs || "";
-      document.getElementById("orderTitle").textContent = `${block.label} Shuttle Bus Order`;
-
-      const arrivalSequence = block.buses
-        .map(bus => {
-          const value = arrived[makeKey(block.id, bus)];
-          return { ...bus, key: makeKey(block.id, bus), order: getArrivalOrder(value), time: getArrivalTime(value) };
-        })
-        .filter(bus => bus.order !== null)
-        .sort((a, b) => a.order - b.order);
-
-      const arrivalContainer = document.getElementById("arrivalListContainer");
-      if (arrivalSequence.length === 0) {
-        arrivalContainer.innerHTML = `<p class="empty">No buses have been marked arrived for this block yet.</p>`;
-      } else {
-        const ol = document.createElement("ol");
-        ol.className = "arrival-list";
-        arrivalSequence.forEach(bus => {
-          const li = document.createElement("li");
-          li.className = "arrival-row";
-          li.innerHTML = `
-            <div class="arrival-left">
-              <span class="order-number">${bus.order}</span>
-              <div>
-                <p class="arrival-school">${bus.school}</p>
-                <p class="arrival-meta">Bus ${bus.bus} · ${bus.time}</p>
-              </div>
-            </div>
-            <button class="undo-button" type="button">Undo</button>
-          `;
-          li.querySelector("button").addEventListener("click", () => toggleArrival(bus));
-          ol.appendChild(li);
-        });
-        arrivalContainer.innerHTML = "";
-        arrivalContainer.appendChild(ol);
-      }
-
-      const filteredBuses = block.buses.filter(bus => !isArrived(arrived[makeKey(block.id, bus)]));
-      const choiceContainer = document.getElementById("choiceListContainer");
-      if (filteredBuses.length === 0) {
-        choiceContainer.innerHTML = `<p class="empty" style="margin-top:20px;">All buses have been added to the arrival order.</p>`;
-        return;
-      }
-      const list = document.createElement("div");
-      list.className = "choice-list";
-      filteredBuses.forEach(bus => {
-        const row = document.createElement("button");
-        row.className = "choice-row";
-        row.type = "button";
-        row.innerHTML = `
-          <div class="choice-left">
-            <span class="circle"></span>
-            <div>
-              <p class="choice-school">${bus.school}</p>
-              <p class="choice-meta">Bus ${bus.bus} · ${bus.days}</p>
-            </div>
-          </div>
-          <div class="eta">
-            <span aria-hidden="true">🕒</span> ETA ${bus.eta}
-            <div class="eta-small">Departs ${bus.departs}</div>
-          </div>
-        `;
-        row.addEventListener("click", () => toggleArrival(bus));
-        list.appendChild(row);
-      });
-      choiceContainer.innerHTML = "";
-      choiceContainer.appendChild(list);
-    }
-    function updateClock() {
-      document.getElementById("currentTime").textContent = formatTime();
-    }
-    function render() {
-      updateClock();
-      renderTabs();
-      renderMain();
-    }
-
-    document.getElementById("resetBlock").addEventListener("click", resetBlock);
-    document.getElementById("resetAll").addEventListener("click", resetAll);
-    setInterval(updateClock, 1000);
-    render();
-  </script>
+function renderTabs(){
+  const tabs=document.getElementById("tabs");tabs.innerHTML="";
+  BLOCKS.forEach(block=>{const s=getStats(block);const btn=document.createElement("button");btn.className="tab"+(block.id===activeBlockId?" active":"");btn.innerHTML=`<div class="percent">${s.percent}%</div><div class="tab-title">${block.label}</div><div class="tab-count">${s.count} of ${s.total} arrived</div><div class="bar"><div class="bar-fill" style="width:${s.percent}%"></div></div>`;btn.addEventListener("click",()=>{activeBlockId=block.id;render()});tabs.appendChild(btn)})
+}
+function getNextOrder(block){const orders=block.buses.map(bus=>getArrivalOrder(arrived[makeKey(block.id,bus)])).filter(order=>typeof order==="number");return orders.length?Math.max(...orders)+1:1}
+function getArrivalSequence(block){return block.buses.map(bus=>{const value=arrived[makeKey(block.id,bus)];return {...bus,key:makeKey(block.id,bus),order:getArrivalOrder(value),time:getArrivalTime(value)}}).filter(bus=>bus.order!==null).sort((a,b)=>a.order-b.order)}
+function resequenceBlock(block){const ordered=getArrivalSequence(block);ordered.forEach((bus,index)=>{arrived[bus.key]={arrived:true,order:index+1,time:bus.time||"Recorded"}})}
+function toggleArrival(bus){
+  const block=getActiveBlock();const key=makeKey(block.id,bus);
+  if(isArrived(arrived[key])){delete arrived[key];resequenceBlock(block);saveArrivals();render();return}
+  const order=getNextOrder(block);const arrivalTime=formatTime();
+  arrived[key]={arrived:true,order,time:arrivalTime};saveArrivals();render();
+  saveArrivalToGoogleSheet({date:formatDate(),block:block.label,order,school:bus.school,bus:bus.bus,arrivalTime,departureTime:bus.departs});
+}
+function renderArrivalList(block){
+  document.getElementById("orderTitle").textContent=`${block.label} Shuttle Bus Order`;
+  const target=document.getElementById("arrivalList");const seq=getArrivalSequence(block);target.innerHTML="";
+  if(seq.length===0){target.innerHTML=`<p class="empty">No buses have been marked arrived for this block yet.</p>`;return}
+  const ol=document.createElement("ol");ol.className="arrival-list";
+  seq.forEach(bus=>{const li=document.createElement("li");li.className="arrival-item";li.innerHTML=`<div class="arrival-left"><span class="order-number">${bus.order}</span><div><div class="arrival-school">${bus.school}</div><div class="arrival-details">Bus ${bus.bus} · ${bus.time}</div></div></div><button class="undo" type="button">Undo</button>`;li.querySelector("button").addEventListener("click",()=>toggleArrival(bus));ol.appendChild(li)});
+  target.appendChild(ol)
+}
+function renderBusList(block){
+  const busList=document.getElementById("busList");busList.innerHTML="";
+  const remaining=block.buses.filter(bus=>!isArrived(arrived[makeKey(block.id,bus)]));
+  if(remaining.length===0){busList.innerHTML=`<p class="empty">All buses have been added to the arrival order.</p>`;return}
+  remaining.forEach(bus=>{const row=document.createElement("button");row.className="bus-row";row.innerHTML=`<div class="bus-left"><span class="circle"></span><div><div class="school">${bus.school}</div><div class="details">Bus ${bus.bus} · ${bus.days}</div></div></div><div class="bus-time">🕒 ETA ${bus.eta}<div class="time-small">Departs ${bus.departs}</div></div>`;row.addEventListener("click",()=>toggleArrival(bus));busList.appendChild(row)})
+}
+function render(){const block=getActiveBlock();document.getElementById("departTime").textContent=block.buses[0]?.departs||"";updateClock();renderTabs();renderArrivalList(block);renderBusList(block)}
+document.getElementById("resetBlockButton").addEventListener("click",()=>{const block=getActiveBlock();if(!confirm(`Reset ${block.label} arrivals?`))return;block.buses.forEach(bus=>delete arrived[makeKey(block.id,bus)]);saveArrivals();render()});
+document.getElementById("resetAllButton").addEventListener("click",()=>{if(!confirm("Reset all arrivals?"))return;arrived={};saveArrivals();render()});
+render();
+</script>
 </body>
 </html>
