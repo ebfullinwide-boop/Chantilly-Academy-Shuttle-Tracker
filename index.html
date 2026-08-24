@@ -260,6 +260,26 @@
       .bus-times { font-size: 13px; }
       .current-time { font-size: 40px; }
     }
+    .mode-switch { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .mode-link { display:inline-block; padding:8px 12px; border-radius:12px; background:#e2e8f0; color:#0f172a; text-decoration:none; font-weight:800; font-size:14px; }
+    .mode-link.active { background:#0f172a; color:white; }
+    .sync-status { margin-top:10px; font-size:13px; font-weight:800; color:#475569; }
+    body.display-mode .header-actions, body.display-mode .choice-list, body.display-mode .save-status, body.display-mode .mode-switch { display:none !important; }
+    body.display-mode .container { max-width:1400px; }
+    body.display-mode header { justify-content:center; text-align:center; }
+    body.display-mode .subtitle { display:none; }
+    body.display-mode h1 { font-size:42px; }
+    body.display-mode .tabs { margin-bottom:16px; }
+    body.display-mode .tab { cursor:default; }
+    body.display-mode .order-title { font-size:40px; text-align:center; }
+    body.display-mode .order-item { padding:18px 22px; }
+    body.display-mode .order-number { width:76px; height:76px; font-size:44px; }
+    body.display-mode .school-name { font-size:42px; }
+    body.display-mode .bus-info { font-size:20px; }
+    body.display-mode .undo-button { display:none; }
+    body.display-mode .current-time { font-size:64px; }
+    body.display-mode .departure-time { font-size:34px; }
+    @media (max-width: 700px) { body.display-mode .school-name { font-size:32px; } body.display-mode .order-number { width:64px; height:64px; font-size:38px; } }
   </style>
 </head>
 <body>
@@ -268,7 +288,9 @@
       <div>
         <div class="badge"><span aria-hidden="true">🚌</span> Chantilly Academy Shuttle Tracker</div>
         <h1>Bus Arrival Dashboard</h1>
-        <p class="subtitle">Tap a bus as it arrives. The app records both arrival status and arrival order.</p>
+        <p class="subtitle" id="modeSubtitle">Tap a bus as it arrives. Updates sync to the student display.</p>
+        <div class="mode-switch"><a class="mode-link" id="staffLink" href="?mode=staff">Staff Mode</a><a class="mode-link" id="displayLink" href="?mode=display">Display Mode</a></div>
+        <div class="sync-status" id="syncStatus">Connecting to live display...</div>
       </div>
       <div class="header-actions">
         <button class="small-button" id="resetBlockButton">↻ Reset block</button>
@@ -355,11 +377,13 @@
       }
     ];
 
-    const STORAGE_KEY = "chantilly-bus-arrivals-v2";
-    const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/a/macros/fcpsschools.net/s/AKfycby4d7iveE0zpgAtOWmhxlQsSMlXH94r4ip_-B10v9AKFvyfjZaApI90PgIhjheiJXPn7w/exec";
+    const STORAGE_KEY = "chantilly-bus-arrivals-v3";
+    const FIREBASE_DB_URL = "https://chantilly-academy-bus-tracker-default-rtdb.firebaseio.com";
+    const MODE = new URLSearchParams(window.location.search).get("mode") === "display" ? "display" : "staff";
 
     let activeBlockId = "am";
     let arrived = loadArrived();
+    let syncTimer = null;
 
     function makeKey(blockId, bus) {
       return `${blockId}-${bus.school}-${bus.bus}`;
@@ -400,45 +424,64 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived));
     }
 
-    function setSaveStatus(message, type) {
+    function setSaveStatus(message, type = "") {
       const el = document.getElementById("saveStatus");
+      if (!el) return;
       el.textContent = message;
       el.className = `save-status ${type}`;
     }
 
-    function saveArrivalToGoogleSheet(record) {
-      if (!GOOGLE_SHEET_WEB_APP_URL) {
-        setSaveStatus("Not saved: Google Sheet URL is missing.", "failed");
-        return;
-      }
+    function setSyncStatus(message) {
+      const el = document.getElementById("syncStatus");
+      if (el) el.textContent = message;
+    }
 
-      setSaveStatus("Saving arrival to Google Sheet...", "saving");
-
-      const params = new URLSearchParams({
-        action: "arrival",
-        date: record.date || "",
-        block: record.block || "",
-        order: String(record.order || ""),
-        school: record.school || "",
-        bus: record.bus || "",
-        arrivalTime: record.arrivalTime || "",
-        departureTime: record.departureTime || ""
+    async function firebaseRequest(path, options = {}) {
+      const response = await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
+        cache: "no-store",
+        ...options,
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) }
       });
+      if (!response.ok) throw new Error(`Firebase ${response.status}`);
+      return response.json();
+    }
 
-      const requestUrl = `${GOOGLE_SHEET_WEB_APP_URL}?${params.toString()}`;
-      const beacon = document.createElement("img");
-      beacon.alt = "";
-      beacon.style.display = "none";
-      beacon.onload = () => {
-        setSaveStatus(`Saved to Google Sheet: ${record.school} - ${record.arrivalTime}`, "saved");
-        beacon.remove();
+    async function pushLiveState() {
+      if (MODE !== "staff") return;
+      const payload = {
+        activeBlockId,
+        arrived,
+        updatedAt: Date.now(),
+        updatedAtText: new Date().toLocaleString()
       };
-      beacon.onerror = () => {
-        setSaveStatus(`Save sent: ${record.school}. Check the Google Sheet.`, "saved");
-        beacon.remove();
-      };
-      beacon.src = requestUrl;
-      document.body.appendChild(beacon);
+      try {
+        setSyncStatus("Syncing live display...");
+        await firebaseRequest("live", { method: "PUT", body: JSON.stringify(payload) });
+        setSyncStatus(`Live display synced at ${formatTime()}`);
+        setSaveStatus("Live display updated.", "saved");
+      } catch (error) {
+        console.error(error);
+        setSyncStatus("Live sync failed - check internet/Firebase rules.");
+        setSaveStatus("Live display was not updated.", "failed");
+      }
+    }
+
+    async function pullLiveState() {
+      if (MODE !== "display") return;
+      try {
+        const data = await firebaseRequest("live");
+        if (data) {
+          activeBlockId = data.activeBlockId || "am";
+          arrived = data.arrived || {};
+          render();
+          setSyncStatus(`Live - last update ${data.updatedAtText || "received"}`);
+        } else {
+          setSyncStatus("Waiting for staff to start the bus tracker...");
+        }
+      } catch (error) {
+        console.error(error);
+        setSyncStatus("Display connection lost - retrying...");
+      }
     }
 
     function getActiveBlock() {
@@ -484,6 +527,7 @@
         resequenceBlock(block);
         saveArrived();
         render();
+        pushLiveState();
         return;
       }
 
@@ -492,17 +536,8 @@
       arrived[key] = { arrived: true, order: arrivalOrder, time: arrivalTime };
       saveArrived();
 
-      saveArrivalToGoogleSheet({
-        date: formatDate(),
-        block: block.label,
-        order: arrivalOrder,
-        school: bus.school,
-        bus: bus.bus,
-        arrivalTime: arrivalTime,
-        departureTime: bus.departs
-      });
-
       render();
+      pushLiveState();
     }
 
     function resetBlock() {
@@ -511,6 +546,7 @@
       block.buses.forEach((bus) => delete arrived[makeKey(block.id, bus)]);
       saveArrived();
       render();
+      pushLiveState();
     }
 
     function resetAll() {
@@ -518,6 +554,7 @@
       arrived = {};
       saveArrived();
       render();
+      pushLiveState();
     }
 
     function renderTabs() {
@@ -538,10 +575,15 @@
           </div>
           <div class="progress"><div class="progress-fill" style="width: ${stats.percent}%"></div></div>
         `;
-        button.addEventListener("click", () => {
-          activeBlockId = block.id;
-          render();
-        });
+        if (MODE === "staff") {
+          button.addEventListener("click", () => {
+            activeBlockId = block.id;
+            render();
+            pushLiveState();
+          });
+        } else {
+          button.disabled = true;
+        }
         tabs.appendChild(button);
       });
     }
@@ -631,9 +673,23 @@
     document.getElementById("resetBlockButton").addEventListener("click", resetBlock);
     document.getElementById("resetAllButton").addEventListener("click", resetAll);
 
+    document.body.classList.toggle("display-mode", MODE === "display");
+    document.getElementById("staffLink").classList.toggle("active", MODE === "staff");
+    document.getElementById("displayLink").classList.toggle("active", MODE === "display");
+    document.getElementById("modeSubtitle").textContent = MODE === "display"
+      ? "Live shuttle bus order - updates automatically."
+      : "Tap a bus as it arrives. Updates sync automatically to the student display.";
+
     updateClock();
     setInterval(updateClock, 1000);
     render();
+
+    if (MODE === "display") {
+      pullLiveState();
+      syncTimer = setInterval(pullLiveState, 2000);
+    } else {
+      pushLiveState();
+    }
   </script>
 </body>
 </html>
