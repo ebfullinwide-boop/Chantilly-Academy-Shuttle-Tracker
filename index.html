@@ -206,6 +206,18 @@
       font-weight: 800;
       white-space: nowrap;
     }
+    .save-status {
+      margin: 16px auto 0;
+      max-width: 520px;
+      border-radius: 14px;
+      padding: 10px 14px;
+      text-align: center;
+      font-weight: 800;
+      display: none;
+    }
+    .save-status.saving { display: block; background: #fef3c7; color: #92400e; }
+    .save-status.saved { display: block; background: #dcfce7; color: #166534; }
+    .save-status.failed { display: block; background: #fee2e2; color: #991b1b; }
     .choice-list { margin-top: 20px; display: grid; gap: 12px; }
     .bus-row {
       display: flex;
@@ -281,6 +293,7 @@
         <div id="arrivalOrder"></div>
       </div>
 
+      <div class="save-status" id="saveStatus" role="status" aria-live="polite"></div>
       <div class="choice-list" id="choiceList"></div>
     </section>
   </main>
@@ -343,7 +356,7 @@
     ];
 
     const STORAGE_KEY = "chantilly-bus-arrivals-v2";
-    const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoWTsEa1Rwsaa4tUT4sF_Eo56w1uzHQ7F8nEyfImW2leA2MQodYf63MPQ_Uy85O_Gf/exec";
+    const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/a/macros/fcpsschools.net/s/AKfycby4d7iveE0zpgAtOWmhxlQsSMlXH94r4ip_-B10v9AKFvyfjZaApI90PgIhjheiJXPn7w/exec";
 
     let activeBlockId = "am";
     let arrived = loadArrived();
@@ -387,16 +400,32 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arrived));
     }
 
-    function saveArrivalToGoogleSheet(record) {
-      if (!GOOGLE_SHEET_WEB_APP_URL) return;
-      fetch(GOOGLE_SHEET_WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(record)
-      }).catch((error) => {
+    function setSaveStatus(message, type) {
+      const el = document.getElementById("saveStatus");
+      el.textContent = message;
+      el.className = `save-status ${type}`;
+    }
+
+    async function saveArrivalToGoogleSheet(record) {
+      if (!GOOGLE_SHEET_WEB_APP_URL) {
+        setSaveStatus("Not saved: Google Sheet URL is missing.", "failed");
+        return;
+      }
+
+      setSaveStatus("Saving arrival to Google Sheet...", "saving");
+
+      try {
+        await fetch(GOOGLE_SHEET_WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(record)
+        });
+        setSaveStatus(`Sent to Google Sheet: ${record.school} - ${record.arrivalTime}`, "saved");
+      } catch (error) {
         console.warn("Could not save arrival to Google Sheet", error);
-      });
+        setSaveStatus("Save failed. Check the connection and Apps Script deployment.", "failed");
+      }
     }
 
     function getActiveBlock() {
