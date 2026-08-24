@@ -406,7 +406,7 @@
       el.className = `save-status ${type}`;
     }
 
-    async function saveArrivalToGoogleSheet(record) {
+    function saveArrivalToGoogleSheet(record) {
       if (!GOOGLE_SHEET_WEB_APP_URL) {
         setSaveStatus("Not saved: Google Sheet URL is missing.", "failed");
         return;
@@ -414,18 +414,31 @@
 
       setSaveStatus("Saving arrival to Google Sheet...", "saving");
 
-      try {
-        await fetch(GOOGLE_SHEET_WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(record)
-        });
-        setSaveStatus(`Sent to Google Sheet: ${record.school} - ${record.arrivalTime}`, "saved");
-      } catch (error) {
-        console.warn("Could not save arrival to Google Sheet", error);
-        setSaveStatus("Save failed. Check the connection and Apps Script deployment.", "failed");
-      }
+      const params = new URLSearchParams({
+        action: "arrival",
+        date: record.date || "",
+        block: record.block || "",
+        order: String(record.order || ""),
+        school: record.school || "",
+        bus: record.bus || "",
+        arrivalTime: record.arrivalTime || "",
+        departureTime: record.departureTime || ""
+      });
+
+      const requestUrl = `${GOOGLE_SHEET_WEB_APP_URL}?${params.toString()}`;
+      const beacon = document.createElement("img");
+      beacon.alt = "";
+      beacon.style.display = "none";
+      beacon.onload = () => {
+        setSaveStatus(`Saved to Google Sheet: ${record.school} - ${record.arrivalTime}`, "saved");
+        beacon.remove();
+      };
+      beacon.onerror = () => {
+        setSaveStatus(`Save sent: ${record.school}. Check the Google Sheet.`, "saved");
+        beacon.remove();
+      };
+      beacon.src = requestUrl;
+      document.body.appendChild(beacon);
     }
 
     function getActiveBlock() {
