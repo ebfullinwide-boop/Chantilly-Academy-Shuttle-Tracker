@@ -271,14 +271,20 @@
     body.display-mode h1 { font-size:42px; }
     body.display-mode .tabs { margin-bottom:16px; }
     body.display-mode .tab { cursor:default; }
-    body.display-mode .order-title { font-size:40px; text-align:center; }
-    body.display-mode .order-item { padding:18px 22px; }
-    body.display-mode .order-number { width:76px; height:76px; font-size:44px; }
-    body.display-mode .school-name { font-size:42px; }
-    body.display-mode .bus-info { font-size:20px; }
+    body.display-mode .order-title { font-size:36px; text-align:center; margin-bottom:10px; }
+    body.display-mode .order-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: column;
+      grid-template-rows: repeat(6, auto);
+      gap: 8px 14px;
+    }
+    body.display-mode .order-item { padding:10px 14px; min-height:72px; }
+    body.display-mode .order-number { width:58px; height:58px; font-size:36px; }
+    body.display-mode .school-name { font-size:32px; }
+    body.display-mode .bus-info { font-size:15px; }
     body.display-mode .undo-button { display:none; }
-    body.display-mode .current-time { font-size:64px; }
-    body.display-mode .departure-time { font-size:34px; }
+    body.display-mode .current-time { font-size:54px; }
+    body.display-mode .departure-time { font-size:30px; }
     @media (max-width: 700px) { body.display-mode .school-name { font-size:32px; } body.display-mode .order-number { width:64px; height:64px; font-size:38px; } }
   </style>
 </head>
@@ -386,6 +392,9 @@
     let activeBlockId = "am";
     let arrived = loadArrived();
     let syncTimer = null;
+    let syncInFlight = false;
+    let syncPending = false;
+    let syncRetryTimer = null;
 
     function makeKey(blockId, bus) {
       return `${blockId}-${bus.school}-${bus.bus}`;
@@ -452,24 +461,48 @@
       return `days/${TODAY_KEY}/live`;
     }
 
-    async function pushLiveState() {
-      if (MODE !== "staff") return;
-      const payload = {
+    function buildLivePayload() {
+      return {
         date: TODAY_KEY,
         activeBlockId,
-        arrived,
+        arrived: JSON.parse(JSON.stringify(arrived)),
         updatedAt: Date.now(),
         updatedAtText: new Date().toLocaleString()
       };
+    }
+
+    async function pushLiveState() {
+      if (MODE !== "staff") return;
+
+      syncPending = true;
+      if (syncInFlight) {
+        setSyncStatus("Syncing latest changes...");
+        return;
+      }
+
+      syncInFlight = true;
+      clearTimeout(syncRetryTimer);
+
       try {
-        setSyncStatus("Syncing live display...");
-        await firebaseRequest(todayFirebasePath(), { method: "PUT", body: JSON.stringify(payload) });
+        while (syncPending) {
+          syncPending = false;
+          const payload = buildLivePayload();
+          setSyncStatus("Syncing live display...");
+          await firebaseRequest(todayFirebasePath(), { method: "PUT", body: JSON.stringify(payload) });
+        }
         setSyncStatus(`Live display synced at ${formatTime()}`);
         setSaveStatus("Live display updated.", "saved");
       } catch (error) {
         console.error(error);
-        setSyncStatus("Live sync failed - check internet/Firebase rules.");
-        setSaveStatus("Live display was not updated.", "failed");
+        syncPending = true;
+        setSyncStatus("Live sync interrupted - retrying...");
+        setSaveStatus("Display update delayed. Retrying automatically.", "failed");
+        syncRetryTimer = setTimeout(() => pushLiveState(), 1500);
+      } finally {
+        syncInFlight = false;
+        if (syncPending && !syncRetryTimer) {
+          setTimeout(() => pushLiveState(), 0);
+        }
       }
     }
 
@@ -711,7 +744,7 @@
 
     if (MODE === "display") {
       pullLiveState();
-      syncTimer = setInterval(pullLiveState, 2000);
+      syncTimer = setInterval(pullLiveState, 1000);
     } else {
       initializeStaffDay();
     }
