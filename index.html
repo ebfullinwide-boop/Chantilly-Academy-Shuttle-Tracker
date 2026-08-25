@@ -392,6 +392,8 @@
     let activeBlockId = "am";
     let arrived = loadArrived();
     let syncTimer = null;
+    let liveEventSource = null;
+    let disconnectWarningTimer = null;
     let syncInFlight = false;
     let syncPending = false;
     let syncRetryTimer = null;
@@ -742,9 +744,62 @@
     setInterval(updateClock, 1000);
     render();
 
+    function applyLiveData(data) {
+      if (!data) {
+        arrived = {};
+        activeBlockId = "am";
+        render();
+        setSyncStatus("Waiting for staff to start today\'s bus tracker...");
+        return;
+      }
+      activeBlockId = data.activeBlockId || "am";
+      arrived = data.arrived || {};
+      render();
+      setSyncStatus(`Live - last update ${data.updatedAtText || "received"}`);
+    }
+
+    function startRealtimeDisplay() {
+      if (MODE !== "display") return;
+      if (liveEventSource) liveEventSource.close();
+
+      setSyncStatus("Connecting to live display...");
+      const streamUrl = `${FIREBASE_DB_URL}/${todayFirebasePath()}.json`;
+      liveEventSource = new EventSource(streamUrl);
+
+      liveEventSource.addEventListener("put", (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.path === "/") applyLiveData(message.data);
+          if (disconnectWarningTimer) { clearTimeout(disconnectWarningTimer); disconnectWarningTimer = null; }
+        } catch (error) {
+          console.error("Could not process live Firebase update", error);
+        }
+      });
+
+      liveEventSource.addEventListener("patch", () => {
+        // Staff currently writes the complete state with PUT. If this changes later,
+        // refresh once so the display still receives the correct combined state.
+        pullLiveState();
+      });
+
+      liveEventSource.onopen = () => {
+        if (disconnectWarningTimer) { clearTimeout(disconnectWarningTimer); disconnectWarningTimer = null; }
+        setSyncStatus("Live display connected");
+      };
+
+      liveEventSource.onerror = () => {
+        // EventSource automatically reconnects. Avoid alarming students for brief hiccups.
+        if (!disconnectWarningTimer) {
+          disconnectWarningTimer = setTimeout(() => {
+            setSyncStatus("Connection lost - reconnecting...");
+            disconnectWarningTimer = null;
+          }, 5000);
+        }
+      };
+    }
+
     if (MODE === "display") {
-      pullLiveState();
-      syncTimer = setInterval(pullLiveState, 1000);
+      startRealtimeDisplay();
     } else {
       initializeStaffDay();
     }
