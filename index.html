@@ -391,15 +391,15 @@
 
     let activeBlockId = "am";
     let arrived = loadArrived();
-    let syncTimer = null;
     let liveEventSource = null;
     let disconnectWarningTimer = null;
-    let syncInFlight = false;
-    let syncPending = false;
-    let syncRetryTimer = null;
 
     function makeKey(blockId, bus) {
       return `${blockId}-${bus.school}-${bus.bus}`;
+    }
+
+    function firebaseBusKey(bus) {
+      return String(bus.bus).replace(/[.#$\[\]\/]/g, "_");
     }
 
     function isArrived(value) {
@@ -426,11 +426,8 @@
     }
 
     function loadArrived() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      } catch (error) {
-        return {};
-      }
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch (error) { return {}; }
     }
 
     function saveArrived() {
@@ -459,88 +456,104 @@
       return response.json();
     }
 
-    function todayFirebasePath() {
-      return `days/${TODAY_KEY}/live`;
+    function dayPath() { return `days/${TODAY_KEY}`; }
+    function activeBlockPath() { return `${dayPath()}/activeBlockId`; }
+    function arrivalsPath(blockId = "") { return `${dayPath()}/arrivals${blockId ? "/" + blockId : ""}`; }
+    function busArrivalPath(block, bus) { return `${arrivalsPath(block.id)}/${firebaseBusKey(bus)}`; }
+
+    function rebuildArrivedFromFirebase(data) {
+      const next = {};
+      const all = (data && data.arrivals) || {};
+      BLOCKS.forEach((block) => {
+        const blockData = all[block.id] || {};
+        block.buses.forEach((bus) => {
+          const record = blockData[firebaseBusKey(bus)];
+          if (record) {
+            next[makeKey(block.id, bus)] = {
+              arrived: true,
+              order: Number(record.order),
+              time: record.time || "Recorded"
+            };
+          }
+        });
+      });
+      arrived = next;
     }
 
-    function buildLivePayload() {
-      return {
-        date: TODAY_KEY,
-        activeBlockId,
-        arrived: JSON.parse(JSON.stringify(arrived)),
-        updatedAt: Date.now(),
-        updatedAtText: new Date().toLocaleString()
-      };
-    }
-
-    async function pushLiveState() {
-      if (MODE !== "staff") return;
-
-      syncPending = true;
-      if (syncInFlight) {
-        setSyncStatus("Syncing latest changes...");
-        return;
+    async function loadDayState() {
+      const data = await firebaseRequest(dayPath());
+      if (!data) {
+        activeBlockId = "am";
+        arrived = {};
+        render();
+        return false;
       }
+      activeBlockId = data.activeBlockId || "am";
+      rebuildArrivedFromFirebase(data);
+      if (MODE === "staff") saveArrived();
+      render();
+      return true;
+    }
 
-      syncInFlight = true;
-      clearTimeout(syncRetryTimer);
-
+    async function setSharedActiveBlock(blockId) {
+      activeBlockId = blockId;
+      render();
       try {
-        while (syncPending) {
-          syncPending = false;
-          const payload = buildLivePayload();
-          setSyncStatus("Syncing live display...");
-          await firebaseRequest(todayFirebasePath(), { method: "PUT", body: JSON.stringify(payload) });
-        }
+        setSyncStatus("Syncing block...");
+        await firebaseRequest(activeBlockPath(), { method: "PUT", body: JSON.stringify(blockId) });
+        setSyncStatus(`Live display synced at ${formatTime()}`);
+      } catch (error) {
+        console.error(error);
+        setSyncStatus("Block sync interrupted - retrying...");
+        setTimeout(() => setSharedActiveBlock(blockId), 1500);
+      }
+    }
+
+    async function saveOneArrival(block, bus, record) {
+      try {
+        setSyncStatus("Syncing bus arrival...");
+        await firebaseRequest(busArrivalPath(block, bus), {
+          method: "PUT",
+          body: JSON.stringify({ school: bus.school, bus: bus.bus, order: record.order, time: record.time, updatedAt: Date.now() })
+        });
         setSyncStatus(`Live display synced at ${formatTime()}`);
         setSaveStatus("Live display updated.", "saved");
       } catch (error) {
         console.error(error);
-        syncPending = true;
-        setSyncStatus("Live sync interrupted - retrying...");
+        setSyncStatus("Bus sync interrupted - retrying...");
         setSaveStatus("Display update delayed. Retrying automatically.", "failed");
-        syncRetryTimer = setTimeout(() => pushLiveState(), 1500);
-      } finally {
-        syncInFlight = false;
-        if (syncPending && !syncRetryTimer) {
-          setTimeout(() => pushLiveState(), 0);
-        }
+        setTimeout(() => saveOneArrival(block, bus, record), 1500);
       }
     }
 
-    async function pullLiveState() {
-      try {
-        const data = await firebaseRequest(todayFirebasePath());
-        if (data) {
-          activeBlockId = data.activeBlockId || "am";
-          arrived = data.arrived || {};
-          if (MODE === "staff") saveArrived();
-          render();
-          setSyncStatus(`Live - last update ${data.updatedAtText || "received"}`);
-          return true;
+    async function deleteOneArrival(block, bus) {
+      await firebaseRequest(busArrivalPath(block, bus), { method: "DELETE" });
+    }
+
+    async function syncBlockOrders(block) {
+      const payload = {};
+      block.buses.forEach((bus) => {
+        const value = arrived[makeKey(block.id, bus)];
+        if (isArrived(value)) {
+          payload[firebaseBusKey(bus)] = { school: bus.school, bus: bus.bus, order: value.order, time: value.time, updatedAt: Date.now() };
         }
-        if (MODE === "display") {
-          arrived = {};
-          activeBlockId = "am";
-          render();
-          setSyncStatus("Waiting for staff to start today's bus tracker...");
-        }
-        return false;
-      } catch (error) {
-        console.error(error);
-        setSyncStatus(MODE === "display" ? "Display connection lost - retrying..." : "Could not load today's shared data.");
-        return false;
-      }
+      });
+      await firebaseRequest(arrivalsPath(block.id), { method: "PUT", body: JSON.stringify(payload) });
     }
 
     async function initializeStaffDay() {
-      const found = await pullLiveState();
-      if (!found) {
-        arrived = {};
-        activeBlockId = "am";
-        saveArrived();
-        render();
-        await pushLiveState();
+      try {
+        const found = await loadDayState();
+        if (!found) {
+          arrived = {};
+          activeBlockId = "am";
+          saveArrived();
+          await firebaseRequest(activeBlockPath(), { method: "PUT", body: JSON.stringify("am") });
+        }
+        setSyncStatus("Live display connected");
+      } catch (error) {
+        console.error(error);
+        setSyncStatus("Could not load today's shared data.");
       }
     }
 
@@ -587,17 +600,27 @@
         resequenceBlock(block);
         saveArrived();
         render();
-        pushLiveState();
+        (async () => {
+          try {
+            await deleteOneArrival(block, bus);
+            await syncBlockOrders(block);
+            setSyncStatus(`Live display synced at ${formatTime()}`);
+          } catch (error) {
+            console.error(error);
+            setSyncStatus("Undo sync interrupted - retrying...");
+            setTimeout(() => syncBlockOrders(block), 1500);
+          }
+        })();
         return;
       }
 
       const arrivalOrder = getNextOrder(block);
       const arrivalTime = formatTime();
-      arrived[key] = { arrived: true, order: arrivalOrder, time: arrivalTime };
+      const record = { arrived: true, order: arrivalOrder, time: arrivalTime };
+      arrived[key] = record;
       saveArrived();
-
       render();
-      pushLiveState();
+      saveOneArrival(block, bus, record);
     }
 
     function resetBlock() {
@@ -606,7 +629,9 @@
       block.buses.forEach((bus) => delete arrived[makeKey(block.id, bus)]);
       saveArrived();
       render();
-      pushLiveState();
+      firebaseRequest(arrivalsPath(block.id), { method: "DELETE" })
+        .then(() => setSyncStatus(`Live display synced at ${formatTime()}`))
+        .catch((error) => { console.error(error); setSyncStatus("Reset sync failed - please retry."); });
     }
 
     function resetAll() {
@@ -614,7 +639,9 @@
       arrived = {};
       saveArrived();
       render();
-      pushLiveState();
+      firebaseRequest(arrivalsPath(), { method: "DELETE" })
+        .then(() => setSyncStatus(`Live display synced at ${formatTime()}`))
+        .catch((error) => { console.error(error); setSyncStatus("Reset sync failed - please retry."); });
     }
 
     function renderTabs() {
@@ -637,9 +664,7 @@
         `;
         if (MODE === "staff") {
           button.addEventListener("click", () => {
-            activeBlockId = block.id;
-            render();
-            pushLiveState();
+            setSharedActiveBlock(block.id);
           });
         } else {
           button.disabled = true;
@@ -744,51 +769,29 @@
     setInterval(updateClock, 1000);
     render();
 
-    function applyLiveData(data) {
-      if (!data) {
-        arrived = {};
-        activeBlockId = "am";
-        render();
-        setSyncStatus("Waiting for staff to start today\'s bus tracker...");
-        return;
+    async function refreshDisplayFromFirebase() {
+      try {
+        await loadDayState();
+        if (disconnectWarningTimer) { clearTimeout(disconnectWarningTimer); disconnectWarningTimer = null; }
+        setSyncStatus("Live display connected");
+      } catch (error) {
+        console.error(error);
       }
-      activeBlockId = data.activeBlockId || "am";
-      arrived = data.arrived || {};
-      render();
-      setSyncStatus(`Live - last update ${data.updatedAtText || "received"}`);
     }
 
     function startRealtimeDisplay() {
       if (MODE !== "display") return;
       if (liveEventSource) liveEventSource.close();
-
       setSyncStatus("Connecting to live display...");
-      const streamUrl = `${FIREBASE_DB_URL}/${todayFirebasePath()}.json`;
-      liveEventSource = new EventSource(streamUrl);
-
-      liveEventSource.addEventListener("put", (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.path === "/") applyLiveData(message.data);
-          if (disconnectWarningTimer) { clearTimeout(disconnectWarningTimer); disconnectWarningTimer = null; }
-        } catch (error) {
-          console.error("Could not process live Firebase update", error);
-        }
-      });
-
-      liveEventSource.addEventListener("patch", () => {
-        // Staff currently writes the complete state with PUT. If this changes later,
-        // refresh once so the display still receives the correct combined state.
-        pullLiveState();
-      });
-
+      liveEventSource = new EventSource(`${FIREBASE_DB_URL}/${dayPath()}.json`);
+      const refresh = () => refreshDisplayFromFirebase();
+      liveEventSource.addEventListener("put", refresh);
+      liveEventSource.addEventListener("patch", refresh);
       liveEventSource.onopen = () => {
         if (disconnectWarningTimer) { clearTimeout(disconnectWarningTimer); disconnectWarningTimer = null; }
-        setSyncStatus("Live display connected");
+        refreshDisplayFromFirebase();
       };
-
       liveEventSource.onerror = () => {
-        // EventSource automatically reconnects. Avoid alarming students for brief hiccups.
         if (!disconnectWarningTimer) {
           disconnectWarningTimer = setTimeout(() => {
             setSyncStatus("Connection lost - reconnecting...");
