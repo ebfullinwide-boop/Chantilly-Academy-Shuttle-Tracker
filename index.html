@@ -313,7 +313,9 @@
     body.display-mode .order-number { width:46px; height:46px; font-size:29px; }
     body.display-mode .order-item:nth-child(-n+6) .order-number { color:#1e4f8f; }
     body.display-mode .order-item:nth-child(n+7) .order-number { color:#356b3c; }
-    body.display-mode .school-name { font-size:clamp(23px,2vw,31px); line-height:1; }
+    body.display-mode .school-line { display:flex; align-items:baseline; gap:14px; min-width:0; white-space:nowrap; }
+    body.display-mode .school-name { font-size:clamp(27px,2.35vw,36px); line-height:1; }
+    body.display-mode .bus-number-inline { font-size:clamp(17px,1.45vw,23px); line-height:1; font-weight:900; color:rgba(255,255,255,.94); }
     body.display-mode .bus-info { margin-top:2px; font-size:12px; line-height:1; color:rgba(255,255,255,.88); }
     body.display-mode .empty { padding:10px; }
     @media (max-height: 720px) {
@@ -325,7 +327,8 @@
       body.display-mode .departure-time { font-size:29px; }
       body.display-mode .order-title { font-size:24px; }
       body.display-mode .order-number { width:40px; height:40px; font-size:25px; }
-      body.display-mode .school-name { font-size:clamp(20px,1.8vw,27px); }
+      body.display-mode .school-name { font-size:clamp(23px,2vw,30px); }
+      body.display-mode .bus-number-inline { font-size:clamp(15px,1.35vw,20px); }
       body.display-mode .bus-info { font-size:11px; }
     }
   </style>
@@ -740,8 +743,16 @@
           <div class="order-left">
             <span class="order-number">${bus.order}</span>
             <div>
-              <p class="school-name">${bus.school}</p>
-              <p class="bus-info">Bus ${bus.bus} · ${bus.time}</p>
+              ${MODE === "display" ? `
+                <div class="school-line">
+                  <p class="school-name">${bus.school}</p>
+                  <span class="bus-number-inline">#${bus.bus}</span>
+                </div>
+                <p class="bus-info">${bus.time}</p>
+              ` : `
+                <p class="school-name">${bus.school}</p>
+                <p class="bus-info">Bus ${bus.bus} · ${bus.time}</p>
+              `}
             </div>
           </div>
           <button type="button" class="undo-button">Undo</button>
